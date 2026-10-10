@@ -1,0 +1,7 @@
+{
+  "name": "Drive Your Luck This Diwali",
+  "description": "Exclusive Diwali cash prize campaign with Telegram Stars entry, DWL ticket generation, and live verifier.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
