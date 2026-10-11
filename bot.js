@@ -1,56 +1,108 @@
-const { Telegraf } = require('telegraf');
-const express = require('express');
+const http = require('http');
+const https = require('https');
 
-// 1. Express Server Setup (Render ke Port Scan Error ko fix karne ke liye)
-const app = express();
 const PORT = process.env.PORT || 3000;
+const TOKEN = process.env.BOT_TOKEN;
 
-app.get('/', (req, res) => {
-    res.send('Diwali Bot Backend is Active and Running!');
+// 1. Render Ke Port Timeout Ko Rokne Ke Liye HTTP Server
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Diwali Bot is alive and running!\n');
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
 
-// 2. Telegram Bot Setup
-const BOT_TOKEN = process.env.BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN_HERE';
-const bot = new Telegraf(BOT_TOKEN);
-
-// Jab user website se 'Start' dabakar Telegram par aayega (e.g. /start DWL-123456)
-bot.start((ctx) => {
-    const payload = ctx.startPayload; // Ticket ID uthayega (DWL-XXXXXX)
+// 2. Telegram Bot Polling (Bina kisi extra library ke)
+let offset = 0;
+function pollTelegram() {
+    if (!TOKEN) return;
     
-    if (payload) {
-        const ticketId = payload;
-        
-        ctx.replyWithMarkdown(
-            `🪔 *Drive Your Luck This Diwali*\n\n` +
-            `Aapka Registration Successful raha!\n` +
-            `🎫 *Ticket ID:* \`${ticketId}\`\n\n` +
-            `Apna winning slot lock karne ke liye niche button se 100 Telegram Stars (⭐ XTR) ka payment karein.`
-        );
-
-        // 100 Stars ka Invoice Send Karein
-        return ctx.replyWithInvoice({
-            title: 'Diwali Jackpot Ticket Entry',
-            description: `Ticket ID: ${ticketId} - Entry Fee 100 Stars`,
-            payload: `pay_${ticketId}`,
-            provider_token: '', // Telegram Stars ke liye token empty rehta hai
-            currency: 'XTR',    // Telegram Stars Currency
-            prices: [{ label: 'Entry Fee', amount: 100 }]
+    https.get(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${offset}&timeout=30`, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+            try {
+                const response = JSON.parse(data);
+                if (response.ok && response.result) {
+                    response.result.forEach(update => {
+                        offset = update.update_id + 1;
+                        handleUpdate(update);
+                    });
+                }
+            } catch (e) {
+                console.error('JSON Parse error:', e);
+            }
+            setTimeout(pollTelegram, 1000);
         });
-    } else {
-        ctx.reply('🪔 Welcome! Kripya pehle website se register karke ticket generate karein.');
+    }).on('error', (err) => {
+        console.error('Polling error:', err);
+        setTimeout(pollTelegram, 3000);
+    });
+}
+
+// 3. User Message Handle Karna (/start aur Ticket ID)
+function handleUpdate(update) {
+    if (!update.message || !update.message.text) return;
+    
+    const chatId = update.message.chat.id;
+    const text = update.message.text;
+    
+    if (text.startsWith('/start')) {
+        const parts = text.split(' ');
+        const ticketId = parts.length > 1 ? parts[1] : null;
+        
+        let replyText = "🪔 *Drive Your Luck This Diwali*\n\n";
+        if (ticketId) {
+            replyText += `Aapki Ticket ID: \`${ticketId}\` secure ho gayi hai!\n` +
+                         `Apna slot confirm karne ke liye 100 Telegram Stars (⭐ XTR) ka payment poora karein.`;
+            
+            // Send Invoice for 100 Stars
+            sendInvoice(chatId, ticketId);
+        } else {
+            replyText += "Welcome! Kripya pehle website se register karke apna ticket generate karein.";
+            sendMessage(chatId, replyText);
+        }
     }
-});
+}
 
-// Pre-checkout query accept karein
-bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
+// Telegram Message Bhejne Ka Function
+function sendMessage(chatId, text) {
+    const data = JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'Markdown' });
+    const options = {
+        hostname: 'api.telegram.org',
+        path: `/bot${TOKEN}/sendMessage`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': data.length }
+    };
+    const req = https.request(options);
+    req.write(data);
+    req.end();
+}
 
-// Successful Payment ke baad ka message
-bot.on('successful_payment', (ctx) => {
-    ctx.reply('🎉 Payment Successful! Aapka 100 Stars ka slot Diwali Jackpot ke liye lock ho gaya hai. All the Best!');
-});
+// Telegram Stars Invoice Bhejne Ka Function
+function sendInvoice(chatId, ticketId) {
+    const data = JSON.stringify({
+        chat_id: chatId,
+        title: 'Diwali Jackpot Ticket Entry',
+        description: `Ticket ID: ${ticketId} - Entry Fee 100 Stars`,
+        payload: `pay_${ticketId}`,
+        provider_token: '', // Stars ke liye empty rehta hai
+        currency: 'XTR',
+        prices: [{ label: 'Entry Fee', amount: 100 }]
+    });
+    
+    const options = {
+        hostname: 'api.telegram.org',
+        path: `/bot${TOKEN}/sendInvoice`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': data.length }
+    };
+    const req = https.request(options);
+    req.write(data);
+    req.end();
+}
 
-bot.launch().then(() => console.log('Telegram Bot Launched!'));
+// Start polling
+pollTelegram();
