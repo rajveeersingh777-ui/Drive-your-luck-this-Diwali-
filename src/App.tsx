@@ -4,16 +4,21 @@ import { HeroSection } from './components/HeroSection';
 import { GrandPrizeCountdown } from './components/GrandPrizeCountdown';
 import { RegistrationForm } from './components/RegistrationForm';
 import { TicketVerifier } from './components/TicketVerifier';
-import { AdminTrackingView } from './components/AdminTrackingView';
+import { ReferAndEarn } from './components/ReferAndEarn';
 import { TelegramStarsGuide } from './components/TelegramStarsGuide';
 import { PrizePoolSection } from './components/PrizePoolSection';
 import { DiwaliAiAssistant } from './components/DiwaliAiAssistant';
 import { Footer } from './components/Footer';
+import { AdminPortal } from './components/admin/AdminPortal';
 import { DiwaliTicket } from './types';
-import { Flame, Sparkles, Bot, ShieldCheck } from 'lucide-react';
+import { Flame, Sparkles } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'register' | 'verify' | 'stars-guide' | 'prizes' | 'admin'>('register');
+  const [isAdminRoute, setIsAdminRoute] = useState(() => {
+    return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  });
+
+  const [activeTab, setActiveTab] = useState<'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals'>('register');
   const [activeTicket, setActiveTicket] = useState<DiwaliTicket | null>(null);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [stats, setStats] = useState<{
@@ -23,8 +28,17 @@ export default function App() {
   }>({
     totalEntries: 1250,
     verifiedEntries: 982,
-    grandPrizePool: '10,000+ Winning Slots',
+    grandPrizePool: '10,000+ Festive Slots',
   });
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
 
   useEffect(() => {
     fetch('/api/stats')
@@ -45,45 +59,62 @@ export default function App() {
     setActiveTicket(ticket);
   };
 
-  const handlePaymentVerified = (updatedTicket: DiwaliTicket) => {
-    setActiveTicket(updatedTicket);
-    setStats((prev) => ({
-      ...prev,
-      verifiedEntries: prev.verifiedEntries + 1,
-    }));
+  // Robust smooth scroll to registration form element
+  const scrollToRegistrationForm = () => {
+    setActiveTab('register');
+    setTimeout(() => {
+      const el = document.getElementById('registration-form');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        const box = document.getElementById('registration-form-box');
+        if (box) {
+          box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }, 50);
   };
+
+  // If on /admin route: render protected Admin Portal directly
+  if (isAdminRoute) {
+    return (
+      <AdminPortal
+        onBackToPublic={() => {
+          setIsAdminRoute(false);
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0b0414] text-amber-50 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] selection:bg-amber-400 selection:text-slate-950">
-      {/* Navbar */}
+      {/* Navbar (Clean Public UI Only) */}
       <Navbar
         activeTab={activeTab}
         onSelectTab={(tab) => {
-          setActiveTab(tab);
-          window.scrollTo({ top: 300, behavior: 'smooth' });
+          if (tab === 'register') {
+            scrollToRegistrationForm();
+          } else {
+            setActiveTab(tab);
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+          }
         }}
         onOpenAiChat={() => setIsAiChatOpen(true)}
       />
 
-      {/* Hero Section */}
+      {/* Hero Section with fixed smooth scroll CTA */}
       <HeroSection
-        onEnterClick={() => {
-          setActiveTab('register');
-          window.scrollTo({ top: 400, behavior: 'smooth' });
-        }}
+        onEnterClick={scrollToRegistrationForm}
         onVerifyClick={() => {
           setActiveTab('verify');
-          window.scrollTo({ top: 400, behavior: 'smooth' });
+          window.scrollTo({ top: 350, behavior: 'smooth' });
         }}
-        stats={stats}
       />
 
       {/* Dynamic Grand Prize Countdown Timer */}
       <GrandPrizeCountdown
-        onEnterNow={() => {
-          setActiveTab('register');
-          window.scrollTo({ top: 450, behavior: 'smooth' });
-        }}
+        onEnterNow={scrollToRegistrationForm}
       />
 
       {/* Main Content Area based on Active Tab */}
@@ -91,6 +122,10 @@ export default function App() {
         {activeTab === 'register' && (
           <RegistrationForm
             onTicketGenerated={handleTicketGenerated}
+            onNavigateToReferrals={() => {
+              setActiveTab('referrals');
+              window.scrollTo({ top: 300, behavior: 'smooth' });
+            }}
           />
         )}
 
@@ -100,24 +135,21 @@ export default function App() {
 
         {activeTab === 'stars-guide' && (
           <TelegramStarsGuide
-            onStartRegistration={() => {
-              setActiveTab('register');
-              window.scrollTo({ top: 350, behavior: 'smooth' });
-            }}
+            onStartRegistration={scrollToRegistrationForm}
           />
         )}
 
         {activeTab === 'prizes' && (
           <PrizePoolSection
-            onRegisterClick={() => {
-              setActiveTab('register');
-              window.scrollTo({ top: 350, behavior: 'smooth' });
-            }}
+            onRegisterClick={scrollToRegistrationForm}
           />
         )}
 
-        {activeTab === 'admin' && (
-          <AdminTrackingView />
+        {activeTab === 'referrals' && (
+          <ReferAndEarn
+            activeTicket={activeTicket}
+            onEnterContest={scrollToRegistrationForm}
+          />
         )}
       </main>
 
@@ -143,13 +175,32 @@ export default function App() {
         onClose={() => setIsAiChatOpen(false)}
         activeTicket={activeTicket}
         onNavigateToTab={(tab) => {
-          setActiveTab(tab);
+          if (tab === 'admin') {
+            setIsAdminRoute(true);
+            window.history.pushState({}, '', '/admin');
+          } else {
+            setActiveTab(tab);
+          }
           setIsAiChatOpen(false);
         }}
       />
 
-      {/* Footer */}
-      <Footer onSelectTab={setActiveTab} />
+      {/* Footer with Discrete Admin Portal Access */}
+      <Footer
+        onSelectTab={(tab) => {
+          if (tab === 'register') {
+            scrollToRegistrationForm();
+          } else {
+            setActiveTab(tab);
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+          }
+        }}
+        onOpenAdmin={() => {
+          setIsAdminRoute(true);
+          window.history.pushState({}, '', '/admin');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
     </div>
   );
 }

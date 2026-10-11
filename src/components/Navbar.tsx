@@ -3,8 +3,8 @@ import { Sparkles, ShieldCheck, Flame, ExternalLink, Bot, Users } from 'lucide-r
 import { CAMPAIGN_INFO } from '../utils/constants';
 
 interface NavbarProps {
-  activeTab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'admin';
-  onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'admin') => void;
+  activeTab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals';
+  onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
   onOpenAiChat: () => void;
 }
 
@@ -103,31 +103,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
             Prizes & Rules
           </button>
           <button
-            onClick={() => onSelectTab('admin')}
+            onClick={() => onSelectTab('referrals')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'admin'
-                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/25 font-bold'
-                : 'text-purple-300 hover:text-purple-100 hover:bg-purple-950/40 border border-purple-500/20'
+              activeTab === 'referrals'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25 font-bold'
+                : 'text-emerald-300 hover:text-emerald-100 hover:bg-emerald-950/40 border border-emerald-500/20'
             }`}
           >
-            <Users className="w-3.5 h-3.5 text-purple-300" />
-            <span>Admin Tracking</span>
+            <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Refer & Earn</span>
           </button>
         </nav>
 
-        {/* Action Button: Live Bot & AI Assistant */}
+        {/* Action Button: AI Assistant */}
         <div className="flex items-center gap-2">
-          <a
-            href="https://t.me/DriveYourLuckDiwaliBot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-sky-950/70 hover:bg-sky-900/80 text-sky-300 border border-sky-500/40 transition-colors"
-          >
-            <Bot className="w-3.5 h-3.5 text-sky-400" />
-            <span>Live Bot</span>
-            <ExternalLink className="w-3 h-3 text-sky-400" />
-          </a>
-
           <button
             onClick={onOpenAiChat}
             className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-md shadow-amber-900/40 border border-amber-400/30 transition-all hover:scale-[1.02] active:scale-95"
@@ -173,12 +162,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
           Prizes
         </button>
         <button
-          onClick={() => onSelectTab('admin')}
+          onClick={() => onSelectTab('referrals')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg ${
-            activeTab === 'admin' ? 'bg-purple-600 text-white font-bold' : 'text-purple-300'
+            activeTab === 'referrals' ? 'bg-emerald-600 text-white font-bold' : 'text-emerald-300'
           }`}
         >
-          Admin Tracking
+          Refer & Earn
         </button>
       </div>
     </header>

@@ -3,10 +3,11 @@ import { ShieldCheck, Flame, ExternalLink, Bot, Sparkles, Heart } from 'lucide-r
 import { CAMPAIGN_INFO } from '../utils/constants';
 
 interface FooterProps {
-  onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'admin') => void;
+  onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
   return (
     <footer className="mt-16 bg-[#0a0314] border-t border-amber-950/60 text-amber-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -63,10 +64,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               </li>
               <li>
                 <button
-                  onClick={() => onSelectTab('admin')}
-                  className="hover:text-amber-200 transition-colors text-purple-300"
+                  onClick={() => onSelectTab('referrals')}
+                  className="hover:text-amber-200 transition-colors text-emerald-300"
                 >
-                  Admin / Participant Tracking
+                  Refer & Earn Viral Perks
                 </button>
               </li>
               <li>
@@ -82,7 +83,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
                   onClick={() => onSelectTab('prizes')}
                   className="hover:text-amber-200 transition-colors"
                 >
-                  Grand Prize Pool & Rules
+                  Festive Rewards & Access
                 </button>
               </li>
             </ul>
@@ -114,8 +115,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
         {/* Bottom Bar */}
         <div className="border-t border-amber-950/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-400/60">
           <p>© 2026 Drive Your Luck This Diwali. All rights reserved.</p>
-          <div className="flex items-center gap-1 text-amber-300/80">
+          <div className="flex items-center gap-4 text-amber-300/80">
             <span>Shubh Deepavali 🪔 Apno Ke Saath Khushiyan Manao!</span>
+            <button
+              onClick={onOpenAdmin}
+              className="text-[11px] text-slate-500 hover:text-amber-400 underline transition-colors"
+            >
+              Admin Portal
+            </button>
           </div>
         </div>
       </div>

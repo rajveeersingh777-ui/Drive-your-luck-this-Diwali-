@@ -8,9 +8,10 @@ import { DiwaliPrizeBreakdownCard } from './DiwaliPrizeBreakdownCard';
 
 interface RegistrationFormProps {
   onTicketGenerated: (ticket: DiwaliTicket) => void;
+  onNavigateToReferrals?: () => void;
 }
 
-export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGenerated }) => {
+export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGenerated, onNavigateToReferrals }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     mobile: '',
@@ -135,7 +136,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <section id="registration-form" className="max-w-4xl mx-auto px-4 py-8 scroll-mt-24">
       {/* If Ticket has already been generated: Show Confirmation Box */}
       {createdTicket ? (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -147,14 +148,14 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
 
             <div className="inline-flex items-center gap-2 text-xs font-bold text-[#ffd700] uppercase tracking-wider bg-black/40 px-3.5 py-1 rounded-full border border-[#ffd700]/40 mb-3">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Registration Successful · Ticket Confirmed</span>
+              <span>Registration Successful · Festive Pass Generated</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white font-['Rozha_One'] tracking-tight">
-              🪔 Aapka Diwali Lucky Ticket Taiyaar Hai!
+              🪔 Aapka Diwali Festive Pass Taiyaar Hai!
             </h2>
             <p className="text-xs sm:text-sm text-amber-100/80 mt-1 max-w-xl mx-auto">
-              Neeche diye gaye button par click karke Telegram bot par apna ticket unlock karein aur ₹5 Crore Grand Jackpot pool mein enter karein!
+              Neeche diye gaye button par click karke Telegram bot par apna ticket unlock karein aur Festive Pass verification complete karein!
             </p>
 
             {/* Ticket ID & Customer Details Grid */}
@@ -199,7 +200,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
             </div>
 
             {/* Prominent Unlock Ticket Button */}
-            <div className="mt-6 pt-2">
+            <div className="mt-6 pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
                 href={`https://t.me/DriveYourLuckDiwaliBot?start=${createdTicket.ticketId}`}
                 target="_blank"
@@ -209,10 +210,21 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
                 <span>🚀 Unlock Ticket on Telegram</span>
                 <ExternalLink className="w-5 h-5 text-slate-950" />
               </a>
-              <p className="text-[11px] text-amber-300/70 mt-2.5">
-                Telegram app automatically opens with your Ticket ID ({createdTicket.ticketId}) payload.
-              </p>
+
+              {onNavigateToReferrals && (
+                <button
+                  type="button"
+                  onClick={onNavigateToReferrals}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 hover:text-white border border-emerald-500/40 font-bold text-sm rounded-xl transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span>Refer Friends & Earn Perks</span>
+                </button>
+              )}
             </div>
+            <p className="text-[11px] text-amber-300/70 mt-2.5">
+              Telegram app automatically opens with your Ticket ID ({createdTicket.ticketId}) payload.
+            </p>
           </div>
 
           {/* Ticket Card Preview */}
@@ -278,17 +290,17 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
           <DiwaliPrizeBreakdownCard />
 
           {/* Registration Form Container */}
-          <div className="bg-[#120722]/90 rounded-2xl border border-amber-900/40 p-6 sm:p-8 shadow-2xl relative">
+          <div id="registration-form-box" className="bg-[#120722]/90 rounded-2xl border border-amber-900/40 p-6 sm:p-8 shadow-2xl relative scroll-mt-24">
           <div className="border-b border-amber-900/40 pb-5 mb-6">
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 mb-1">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Step 1 of 2: Registration</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white font-['Rozha_One']">
-              🪔 Register for Diwali Jackpot
+              🪔 Register for Diwali Festive Pass
             </h2>
             <p className="text-xs sm:text-sm text-amber-200/70 mt-1">
-              Apni details bhariye aur instant unique <span className="text-amber-300 font-mono">DWL-XXXXXX</span> Ticket ID paayein.
+              Apni details bhariye aur instant unique <span className="text-amber-300 font-mono">DWL-XXXXXX</span> Festive Pass ID paayein.
             </p>
           </div>
 
@@ -442,6 +454,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
         </div>
       </div>
       )}
-    </div>
+    </section>
   );
 };

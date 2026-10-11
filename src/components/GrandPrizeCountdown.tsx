@@ -145,13 +145,17 @@ export const GrandPrizeCountdown: React.FC<GrandPrizeCountdownProps> = ({
         {/* Action Button */}
         {onEnterNow && (
           <div className="mt-5">
-            <button
-              onClick={onEnterNow}
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3 bg-gradient-to-r from-[#ffd700] via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-transform transform hover:scale-105 active:scale-95"
+            <a
+              href="#registration-form"
+              onClick={(e) => {
+                e.preventDefault();
+                onEnterNow();
+              }}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3 bg-gradient-to-r from-[#ffd700] via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-transform transform hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <span>Lock My Diwali Ticket (100 ⭐ XTR)</span>
+              <span>Claim Festive Pass (100 ⭐ XTR)</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </a>
           </div>
         )}
       </div>

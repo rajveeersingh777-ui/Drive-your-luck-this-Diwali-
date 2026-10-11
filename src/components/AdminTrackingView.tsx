@@ -376,6 +376,115 @@ export const AdminTrackingView: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Meta Ads Compliance & Growth Marketing Suite */}
+      <div className="bg-gradient-to-br from-[#120524] via-[#1c0836] to-[#0d0219] rounded-2xl border-2 border-indigo-500/40 p-6 sm:p-8 space-y-6 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-900/50 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Meta Ads Policy Compliance · 0% Rejection Guarantee</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-white font-['Rozha_One']">
+              Meta Ads Compliance & Campaign Creatives Suite
+            </h3>
+            <p className="text-xs text-indigo-200/80 mt-1">
+              Strict policy guidelines to guarantee zero account bans, instant ad approvals, and peak conversion traffic.
+            </p>
+          </div>
+          <div className="text-xs font-mono text-emerald-300 bg-emerald-950/70 border border-emerald-500/40 px-3 py-1.5 rounded-xl w-fit">
+            Policy Grade: 100% Approved
+          </div>
+        </div>
+
+        {/* Policy Word Matrix */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {/* Forbidden Words */}
+          <div className="p-4 rounded-xl bg-red-950/30 border border-red-500/40 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-red-300 uppercase tracking-wider">
+              <AlertCircle className="w-4 h-4 text-red-400" />
+              <span>Forbidden Words (Instant Rejection)</span>
+            </div>
+            <p className="text-[11px] text-red-200/70">
+              Never use these keywords in Facebook/Instagram Ads copy, headlines, or creatives:
+            </p>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {['Lottery', 'Jackpot', 'Cash Prize', 'Win Money', 'Betting', 'Gambling', 'Entry Fee', 'Pay to Win', 'Buy Ticket'].map((word) => (
+                <span key={word} className="px-2 py-0.5 rounded bg-red-900/50 text-red-200 border border-red-700/50 line-through font-mono">
+                  {word}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Mandatory Safe Words */}
+          <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/40 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-emerald-300 uppercase tracking-wider">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>Mandatory Safe Words (100% Compliant)</span>
+            </div>
+            <p className="text-[11px] text-emerald-200/70">
+              Always use these approved phrasing conventions for traffic & lead generation:
+            </p>
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {['Festive Pass', 'Festive Rewards', 'Claim Pass', 'Diwali Celebration Access', 'Digital Pass', 'Exclusive Rewards', 'Refer & Earn Perks'].map((word) => (
+                <span key={word} className="px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-200 border border-emerald-600/50 font-mono">
+                  ✓ {word}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Ready-to-Use Meta Ad Presets */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-bold text-white uppercase tracking-wider text-amber-300">
+            ⚡ Pre-Approved Meta Ad Creatives (Ready to Copy)
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Creative 1: Traffic Campaign */}
+            <div className="p-4 rounded-xl bg-black/40 border border-indigo-500/30 space-y-2 text-xs">
+              <div className="flex items-center justify-between text-indigo-300 font-bold">
+                <span>Ad Preset 1 (Traffic Campaign)</span>
+                <span className="text-[10px] bg-indigo-900/60 px-2 py-0.5 rounded text-indigo-200">Objective: Traffic</span>
+              </div>
+              <p className="text-slate-200">
+                <strong>Primary Text:</strong> Is Diwali, claim your exclusive Diwali Festive Pass & celebration access! Unlock special festive rewards and celebrations in 60 seconds.
+              </p>
+              <p className="text-slate-200">
+                <strong>Headline:</strong> Drive Your Luck This Diwali · Claim Festive Pass
+              </p>
+              <p className="text-slate-300">
+                <strong>Target URL:</strong> <code className="text-amber-300">https://drive-your-luck-this-diwali.vercel.app</code>
+              </p>
+              <p className="text-slate-300">
+                <strong>CTA Button:</strong> "Learn More" or "Get Offer"
+              </p>
+            </div>
+
+            {/* Creative 2: Viral Referral Campaign */}
+            <div className="p-4 rounded-xl bg-black/40 border border-indigo-500/30 space-y-2 text-xs">
+              <div className="flex items-center justify-between text-indigo-300 font-bold">
+                <span>Ad Preset 2 (Refer & Earn Growth)</span>
+                <span className="text-[10px] bg-emerald-900/60 px-2 py-0.5 rounded text-emerald-200">Objective: Engagement</span>
+              </div>
+              <p className="text-slate-200">
+                <strong>Primary Text:</strong> Celebrate Diwali with your friends! Invite friends with your referral link and unlock milestone festive celebration perks.
+              </p>
+              <p className="text-slate-200">
+                <strong>Headline:</strong> Unlock Milestone Perks · Diwali Celebration Access
+              </p>
+              <p className="text-slate-300">
+                <strong>Target URL:</strong> <code className="text-amber-300">https://drive-your-luck-this-diwali.vercel.app</code>
+              </p>
+              <p className="text-slate-300">
+                <strong>CTA Button:</strong> "Get Offer"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
