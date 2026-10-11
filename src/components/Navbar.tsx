@@ -16,20 +16,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span className="font-semibold text-amber-300">Diwali 2026 Special</span>
+            <span className="font-semibold text-amber-300">Diwali 2026 Celebration</span>
             <span aria-hidden="true" className="text-amber-500/50">·</span>
-            <span>Grand Cash Pool: <strong className="text-white">{CAMPAIGN_INFO.totalPrizePool}</strong></span>
+            <span>Grand Rewards Pool: <strong className="text-white">{CAMPAIGN_INFO.totalPrizePool}</strong></span>
             <span aria-hidden="true" className="text-amber-500/50">·</span>
-            <span>Entry Fee: <strong className="text-amber-300">100 Telegram Stars (⭐ XTR)</strong></span>
+            <span>Festive Pass: <strong className="text-amber-300">100 Telegram Stars (⭐ XTR)</strong></span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-amber-300/80">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Verified Contest Campaign
+              Official Festive Pass Portal
             </span>
             <span aria-hidden="true" className="text-amber-500/50">·</span>
             <span className="text-amber-300 font-medium">
-              Official Entry Portal
+              Celebration Access
             </span>
           </div>
         </div>
@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
                 : 'text-amber-200/80 hover:text-amber-100 hover:bg-amber-900/30'
             }`}
           >
-            Enter Contest
+            Claim Pass
           </button>
           <button
             onClick={() => onSelectTab('verify')}
@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
                 : 'text-amber-200/80 hover:text-amber-100 hover:bg-amber-900/30'
             }`}
           >
-            Verify Ticket
+            Verify Pass
           </button>
           <button
             onClick={() => onSelectTab('stars-guide')}
@@ -100,7 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
                 : 'text-amber-200/80 hover:text-amber-100 hover:bg-amber-900/30'
             }`}
           >
-            Prizes & Rules
+            Festive Rewards
           </button>
           <button
             onClick={() => onSelectTab('referrals')}
@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
             activeTab === 'register' ? 'bg-amber-500 text-black font-bold' : 'text-amber-200/70'
           }`}
         >
-          Enter Contest
+          Claim Pass
         </button>
         <button
           onClick={() => onSelectTab('verify')}
@@ -143,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
             activeTab === 'verify' ? 'bg-amber-500 text-black font-bold' : 'text-amber-200/70'
           }`}
         >
-          Verify Ticket
+          Verify Pass
         </button>
         <button
           onClick={() => onSelectTab('stars-guide')}
@@ -159,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
             activeTab === 'prizes' ? 'bg-amber-500 text-black font-bold' : 'text-amber-200/70'
           }`}
         >
-          Prizes
+          Rewards
         </button>
         <button
           onClick={() => onSelectTab('referrals')}

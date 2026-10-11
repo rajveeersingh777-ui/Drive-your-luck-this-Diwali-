@@ -76,13 +76,13 @@ export const TicketVerifier: React.FC<TicketVerifierProps> = () => {
       <div className="text-center max-w-2xl mx-auto mb-8">
         <div className="inline-flex items-center gap-2 text-xs font-semibold text-amber-400 mb-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Real-time Contest Verification</span>
+          <span>Real-time Pass Verification</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-400 font-['Rozha_One']">
-          Verify Your Diwali Ticket Entry
+          Verify Your Diwali Festive Pass
         </h2>
         <p className="text-xs sm:text-sm text-amber-200/70 mt-1">
-          Check if your 100 Telegram Stars entry fee has been confirmed for the 10,000+ Winning Slots Diwali Draw.
+          Check if your 100 Telegram Stars Festive Pass has been unlocked for the 10,000+ Festive Rewards celebration.
         </p>
       </div>
 
@@ -119,7 +119,7 @@ export const TicketVerifier: React.FC<TicketVerifierProps> = () => {
             ) : (
               <>
                 <ShieldCheck className="w-4 h-4" />
-                <span>Verify Ticket</span>
+                <span>Verify Pass</span>
               </>
             )}
           </button>

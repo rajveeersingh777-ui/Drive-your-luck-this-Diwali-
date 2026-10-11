@@ -22,7 +22,7 @@ export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
         </h2>
         <p className="text-xs sm:text-sm text-amber-200/80 mt-1 leading-relaxed">
           Telegram Stars ek secure digital currency hai jo Telegram app ke andar seamless micro-transactions ke liye bani hai. 
-          Jaaniye 100 Stars (₹199) kaise pay karein aur lucky draw entry kaise lock karein!
+          Jaaniye 100 Stars (₹199) kaise pay karein aur Festive Pass kaise unlock karein!
         </p>
       </div>
 
@@ -62,9 +62,9 @@ export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
           <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs flex items-center justify-center mb-3">
             04
           </div>
-          <h4 className="text-sm font-bold text-white mb-1.5">Verified Diwali Entry</h4>
+          <h4 className="text-sm font-bold text-white mb-1.5">Verified Festive Entry</h4>
           <p className="text-xs text-amber-200/70 leading-relaxed">
-            Turant digital verified ticket generate hoga aur aap Mega Diwali Draw (₹2,75,000+) mein shamil ho jayenge!
+            Turant digital verified Festive Pass generate hoga aur aap Grand Diwali Celebration Rewards (10,000+ Slots) mein unlock ho jayenge!
           </p>
         </div>
       </div>
@@ -137,10 +137,10 @@ export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
 
           <div className="p-4 rounded-xl bg-[#120722]/80 border border-amber-900/30">
             <h5 className="font-semibold text-amber-200 mb-1">
-              Q: Cash prizes kaise distribute honge?
+              Q: Festive rewards kaise claim honge?
             </h5>
             <p className="text-amber-200/70 leading-relaxed">
-              Winners ko unke verified registration mobile number par WhatsApp/Call ke jariye connect kiya jayega aur unke direct Bank Account (NEFT/IMPS) ya UPI par prize money transfer ki jayegi.
+              Recipients ko unke verified registration mobile number par connect kiya jayega aur exclusive Diwali festive perks aur rewards seamlessly provide kiye jayenge.
             </p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
             onClick={onStartRegistration}
             className="px-6 py-3 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all"
           >
-            <span>Register Now & Get DWL Ticket</span>
+            <span>Claim Festive Pass & Get DWL ID</span>
             <ArrowRight className="w-4 h-4" />
           </button>
           <a
