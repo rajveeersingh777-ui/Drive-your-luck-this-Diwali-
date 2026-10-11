@@ -17,12 +17,29 @@ import { DiwaliTicket } from '../types';
 
 interface ReferAndEarnProps {
   activeTicket?: DiwaliTicket | null;
-  onEnterContest: () => void;
+  onEnterContest?: (e?: React.MouseEvent) => void;
 }
 
 export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({ activeTicket, onEnterContest }) => {
   const [ticketInput, setTicketInput] = useState(activeTicket?.ticketId || '');
   const [copied, setCopied] = useState(false);
+
+  const handleScrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById('registration-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Fallback if ID is missing: search for form tag or input
+      const formElement = document.querySelector('form') || document.querySelector('input');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    if (onEnterContest) {
+      onEnterContest(e);
+    }
+  };
 
   const currentTicketId = activeTicket?.ticketId || ticketInput.trim() || 'DWL-DIWALI';
   const referralLink = `https://drive-your-luck-this-diwali.vercel.app?ref=${currentTicketId}`;
@@ -107,7 +124,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({ activeTicket, onEnte
             </button>
 
             {!activeTicket && (
-              <div className="w-full sm:w-auto mt-1 sm:mt-0 flex items-center gap-2">
+              <div className="w-full sm:w-auto mt-1 sm:mt-0 flex flex-wrap items-center gap-2">
                 <input
                   type="text"
                   placeholder="Enter Ticket ID (e.g. DWL-584920)"
@@ -115,6 +132,12 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({ activeTicket, onEnte
                   onChange={(e) => setTicketInput(e.target.value.toUpperCase())}
                   className="px-3 py-1.5 bg-black/60 border border-emerald-500/30 rounded-lg text-xs font-mono text-white placeholder-slate-500 w-48 focus:outline-none focus:border-emerald-400"
                 />
+                <button
+                  onClick={handleScrollToForm}
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors"
+                >
+                  Fill Registration Form
+                </button>
               </div>
             )}
           </div>

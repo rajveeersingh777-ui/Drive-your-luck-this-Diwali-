@@ -136,7 +136,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
   };
 
   return (
-    <section id="registration-form" className="max-w-4xl mx-auto px-4 py-8 scroll-mt-24">
+    <section className="max-w-4xl mx-auto px-4 py-8">
       {/* If Ticket has already been generated: Show Confirmation Box */}
       {createdTicket ? (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -4,10 +4,27 @@ import { CAMPAIGN_INFO } from '../utils/constants';
 import { DiwaliPrizeBreakdownCard } from './DiwaliPrizeBreakdownCard';
 
 interface PrizePoolSectionProps {
-  onRegisterClick: () => void;
+  onRegisterClick?: (e?: React.MouseEvent) => void;
 }
 
 export const PrizePoolSection: React.FC<PrizePoolSectionProps> = ({ onRegisterClick }) => {
+  const handleScrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById('registration-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Fallback if ID is missing: search for form tag or input
+      const formElement = document.querySelector('form') || document.querySelector('input');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    if (onRegisterClick) {
+      onRegisterClick(e);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-12">
       {/* Official 10,000+ Winners Prize Breakdown Section Banner */}
@@ -144,7 +161,7 @@ export const PrizePoolSection: React.FC<PrizePoolSectionProps> = ({ onRegisterCl
 
         <div className="pt-4 border-t border-amber-900/40 text-center">
           <button
-            onClick={onRegisterClick}
+            onClick={handleScrollToForm}
             className="px-6 py-3 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all"
           >
             Claim Your Ticket Before Entries Close

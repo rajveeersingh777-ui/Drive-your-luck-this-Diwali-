@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Flame, ExternalLink, Bot, Sparkles, Heart } from 'lucide-react';
 import { CAMPAIGN_INFO } from '../utils/constants';
+import { DiwaliDiya } from './DiwaliDiya';
 
 interface FooterProps {
   onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
@@ -8,6 +9,21 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
+  const handleScrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById('registration-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Fallback if ID is missing: search for form tag or input
+      const formElement = document.querySelector('form') || document.querySelector('input');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    onSelectTab('register');
+  };
+
   return (
     <footer className="mt-16 bg-[#0a0314] border-t border-amber-950/60 text-amber-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -15,21 +31,21 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700 flex items-center justify-center border border-amber-400/30 shadow-lg">
-                <Flame className="w-5 h-5 text-white" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-950 via-[#220716] to-[#0c0314] flex items-center justify-center border border-amber-400/40 shadow-lg p-1">
+                <DiwaliDiya size={34} glow={true} />
               </div>
               <div>
                 <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-400 font-['Cinzel']">
                   Drive Your Luck This Diwali
                 </span>
                 <p className="text-xs text-amber-400/80">
-                  Exclusive Cash Prize Campaign on <span className="text-amber-200 font-semibold">{CAMPAIGN_INFO.host}</span>
+                  Official Festive Campaign on <span className="text-amber-200 font-semibold">{CAMPAIGN_INFO.host}</span>
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-amber-300/70 max-w-md leading-relaxed">
-              Kismat Ki Roshni, Cash Prizes Ki Barsaat! Enter with 100 Telegram Stars (⭐ XTR) and win up to ₹1,00,000 cash prize direct to your bank account on Diwali night.
+              Kismat Ki Roshni, Diwali Rewards Ki Barsaat! Secure your Festive Pass with 100 Telegram Stars (⭐ XTR) and unlock exclusive access to celebratory rewards on Diwali night.
             </p>
 
             <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-900/40 text-xs text-amber-300/80 flex items-start gap-2.5">
@@ -48,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
             <ul className="space-y-2 text-xs">
               <li>
                 <button
-                  onClick={() => onSelectTab('register')}
+                  onClick={handleScrollToForm}
                   className="hover:text-amber-200 transition-colors"
                 >
                   Enter Contest (Registration)

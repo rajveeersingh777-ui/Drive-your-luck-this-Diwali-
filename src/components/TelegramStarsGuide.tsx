@@ -3,12 +3,28 @@ import { Star, Smartphone, ShieldCheck, CheckCircle2, HelpCircle, ArrowRight, Bo
 import { CAMPAIGN_INFO } from '../utils/constants';
 
 interface TelegramStarsGuideProps {
-  onStartRegistration: () => void;
+  onStartRegistration?: (e?: React.MouseEvent) => void;
 }
 
 export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
   onStartRegistration,
 }) => {
+  const handleScrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById('registration-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Fallback if ID is missing: search for form tag or input
+      const formElement = document.querySelector('form') || document.querySelector('input');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    if (onStartRegistration) {
+      onStartRegistration(e);
+    }
+  };
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
       {/* Header */}
@@ -153,7 +169,7 @@ export const TelegramStarsGuide: React.FC<TelegramStarsGuideProps> = ({
         </h4>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <button
-            onClick={onStartRegistration}
+            onClick={handleScrollToForm}
             className="px-6 py-3 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all"
           >
             <span>Claim Festive Pass & Get DWL ID</span>

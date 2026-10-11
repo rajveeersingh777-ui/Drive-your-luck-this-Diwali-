@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, ShieldCheck, Flame, ExternalLink, Bot, Users } from 'lucide-react';
 import { CAMPAIGN_INFO } from '../utils/constants';
+import { DiwaliDiya } from './DiwaliDiya';
 
 interface NavbarProps {
   activeTab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals';
@@ -9,13 +10,27 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAiChat }) => {
+  const handleScrollToForm = (e?: React.MouseEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const element = document.getElementById('registration-form');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Fallback if ID is missing: search for form tag or input
+      const formElement = document.querySelector('form') || document.querySelector('input');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    onSelectTab('register');
+  };
   return (
     <header className="sticky top-0 z-40 bg-[#0e0618]/90 backdrop-blur-md border-b border-amber-900/30">
       {/* Top Festive Announcement Bar */}
       <div className="bg-gradient-to-r from-amber-950/80 via-amber-800/60 to-purple-950/80 border-b border-amber-500/20 px-4 py-2 text-xs text-amber-200">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <DiwaliDiya size={18} glow={false} />
             <span className="font-semibold text-amber-300">Diwali 2026 Celebration</span>
             <span aria-hidden="true" className="text-amber-500/50">·</span>
             <span>Grand Rewards Pool: <strong className="text-white">{CAMPAIGN_INFO.totalPrizePool}</strong></span>
@@ -37,25 +52,25 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
 
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
-        {/* Brand / Logo */}
+        {/* Brand / Logo with Diwali Diya Official Campaign Logo */}
         <div 
           onClick={() => onSelectTab('register')}
           className="flex items-center gap-3 cursor-pointer select-none group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform border border-amber-300/30">
-            <Flame className="w-5 h-5 text-white drop-shadow" />
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-950 via-[#220716] to-[#0c0314] flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-transform border border-amber-400/40 p-1">
+            <DiwaliDiya size={34} glow={true} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-400 font-['Cinzel'] tracking-wide">
                 Drive Your Luck
               </span>
-              <span className="text-[10px] font-semibold tracking-wider text-amber-400 uppercase bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-600/40">
-                Diwali
+              <span className="text-[10px] font-semibold tracking-wider text-amber-300 uppercase bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-500/40">
+                Diwali 🪔
               </span>
             </div>
-            <p className="text-[11px] text-amber-400/80 font-medium">
-              Official Festive Campaign
+            <p className="text-[11px] text-amber-400/80 font-medium flex items-center gap-1">
+              <span>Official Festive Campaign</span>
             </p>
           </div>
         </div>
@@ -63,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
         {/* Desktop Nav Controls */}
         <nav className="hidden md:flex items-center gap-1 p-1 bg-amber-950/40 border border-amber-900/40 rounded-xl">
           <button
-            onClick={() => onSelectTab('register')}
+            onClick={handleScrollToForm}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               activeTab === 'register'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-bold'
@@ -130,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
       {/* Mobile Sub-Navigation Bar */}
       <div className="flex md:hidden overflow-x-auto px-4 py-2 border-t border-amber-900/30 gap-1.5 bg-[#0b0414]">
         <button
-          onClick={() => onSelectTab('register')}
+          onClick={handleScrollToForm}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg ${
             activeTab === 'register' ? 'bg-amber-500 text-black font-bold' : 'text-amber-200/70'
           }`}
