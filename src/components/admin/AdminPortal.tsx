@@ -20,20 +20,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToPublic }) => {
           setAdminUser(JSON.parse(storedUser));
         } catch (e) {}
       }
-      if (window.location.pathname !== '/admin') {
-        window.history.replaceState({}, '', '/admin');
-      }
     } else {
-      if (window.location.pathname === '/admin') {
-        window.history.replaceState({}, '', '/admin/login');
-      }
+      setIsAuthenticated(false);
     }
   }, []);
 
-  const handleLoginSuccess = (token: string, user: any) => {
+  const handleLoginSuccess = (_token: string, user: any) => {
     setIsAuthenticated(true);
     setAdminUser(user);
-    window.history.pushState({}, '', '/admin');
   };
 
   const handleLogout = () => {
@@ -41,7 +35,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToPublic }) => {
     sessionStorage.removeItem('dwl_admin_user');
     setIsAuthenticated(false);
     setAdminUser(null);
-    window.history.pushState({}, '', '/admin/login');
   };
 
   if (!isAuthenticated) {

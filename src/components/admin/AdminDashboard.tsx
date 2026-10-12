@@ -18,7 +18,9 @@ import {
   Activity,
   Share2,
   TrendingUp,
-  Award
+  Award,
+  Wallet,
+  IndianRupee
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -63,9 +65,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       { ticketId: 'DWL-429815', ownerName: 'Pooja V.', totalInvited: 8, verifiedClaims: 6, milestoneTier: 'Golden Star' },
       { ticketId: 'DWL-984210', ownerName: 'Vikram K.', totalInvited: 6, verifiedClaims: 5, milestoneTier: 'Golden Star' },
       { ticketId: 'DWL-584920', ownerName: 'Sneha R.', totalInvited: 5, verifiedClaims: 4, milestoneTier: 'Golden Star' },
-      { ticketId: 'DWL-310492', ownerName: 'Rohan M.', totalInvited: 3, verifiedClaims: 2, milestoneTier: 'Silver VIP' },
     ],
   });
+
+  // Wallet UPI Withdrawals State
+  const [withdrawals, setWithdrawals] = useState<any[]>(() => {
+    try {
+      const raw = localStorage.getItem('dwl_user_withdrawals');
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return [
+      {
+        id: 'wd-sample-1',
+        amount: 1000,
+        upiId: 'vikram.singh@okaxis',
+        date: '12 Oct 2026',
+        status: 'PROCESSING',
+      },
+    ];
+  });
+
+  const handleApproveWithdrawal = (id: string) => {
+    setWithdrawals((prev) => {
+      const updated = prev.map((w) =>
+        w.id === id ? { ...w, status: 'PAID / TRANSFERRED' } : w
+      );
+      try {
+        localStorage.setItem('dwl_user_withdrawals', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
 
   // Fetch registrations & bot health
   const refreshAllData = async () => {
@@ -247,8 +277,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* User Session & Logout */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="text-right hidden sm:block">
-            <span className="text-xs font-bold text-amber-300 block">{adminUser?.name || 'Administrator'}</span>
-            <span className="text-[10px] text-slate-400 font-mono">{adminUser?.email || 'admin@driveyourluck.com'}</span>
+            <span className="text-xs font-bold text-amber-300 block">{adminUser?.name || 'Rajveer Singh (Super Admin)'}</span>
+            <span className="text-[10px] text-slate-400 font-mono">{adminUser?.email || 'rajveeer777@gmail.com'}</span>
           </div>
 
           <button
@@ -499,6 +529,94 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-[11px] font-mono text-emerald-300">
                       {item.transactionRef || 'Awaiting Bot Claim'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Wallet UPI Withdrawals Management Section */}
+      <div className="bg-[#120524] border border-emerald-900/40 rounded-2xl p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-900/40 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                User Wallet UPI Withdrawals Management
+                <span className="text-[10px] font-bold bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+                  Min ₹1,000 INR
+                </span>
+              </h3>
+              <p className="text-xs text-emerald-200/70 mt-0.5">
+                Review and process bank transfer payouts for verified refer & earn earnings
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-mono text-emerald-300">
+            Total Requests: {withdrawals.length}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-emerald-900/40">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-black/60 text-emerald-300/90 uppercase font-semibold border-b border-emerald-900/40">
+              <tr>
+                <th className="py-3 px-4">Withdrawal ID</th>
+                <th className="py-3 px-4">Amount</th>
+                <th className="py-3 px-4">UPI Destination</th>
+                <th className="py-3 px-4">Date</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-emerald-900/30 bg-[#0d0417]/60">
+              {withdrawals.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 px-4 text-center text-slate-400">
+                    No withdrawal requests submitted yet.
+                  </td>
+                </tr>
+              ) : (
+                withdrawals.map((w) => (
+                  <tr key={w.id} className="hover:bg-emerald-950/20 transition-colors">
+                    <td className="py-3 px-4 font-mono text-amber-300 font-semibold">{w.id}</td>
+                    <td className="py-3 px-4 font-black text-emerald-300 font-mono text-sm">
+                      ₹{w.amount}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-white select-all">
+                      {w.upiId}
+                    </td>
+                    <td className="py-3 px-4 text-slate-400">{w.date}</td>
+                    <td className="py-3 px-4">
+                      {w.status === 'PAID / TRANSFERRED' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          PAID / TRANSFERRED
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-500/40">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          PROCESSING
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {w.status !== 'PAID / TRANSFERRED' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleApproveWithdrawal(w.id)}
+                          className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-bold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
+                        >
+                          Mark Paid via UPI
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-emerald-400 font-medium">✓ Settled</span>
+                      )}
                     </td>
                   </tr>
                 ))

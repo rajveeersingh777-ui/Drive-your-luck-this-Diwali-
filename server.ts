@@ -178,22 +178,22 @@ app.post('/api/register', (req, res) => {
 // Admin Authentication Endpoint
 app.post('/api/admin/login', (req, res) => {
   const { email, password } = req.body;
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@driveyourluck.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Diwali2026Admin';
+  const adminEmail = process.env.ADMIN_EMAIL || 'rajveeer777@gmail.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Charan@1994';
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
 
-  if (email.trim().toLowerCase() === adminEmail.toLowerCase() && password === adminPassword) {
+  if (email.trim().toLowerCase() === adminEmail.toLowerCase() && String(password) === adminPassword) {
     const token = `dwl_admin_jwt_${Buffer.from(email + ':' + Date.now()).toString('base64')}`;
     return res.json({
       success: true,
       token,
       admin: {
-        email: adminEmail,
+        email: 'rajveeer777@gmail.com',
         role: 'Super Admin',
-        name: 'Diwali Campaign Director',
+        name: 'Rajveer Singh (Super Admin)',
       },
     });
   }

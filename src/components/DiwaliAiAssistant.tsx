@@ -7,7 +7,7 @@ interface DiwaliAiAssistantProps {
   isOpen: boolean;
   onClose: () => void;
   activeTicket?: DiwaliTicket | null;
-  onNavigateToTab?: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'admin') => void;
+  onNavigateToTab?: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
 }
 
 export const DiwaliAiAssistant: React.FC<DiwaliAiAssistantProps> = ({

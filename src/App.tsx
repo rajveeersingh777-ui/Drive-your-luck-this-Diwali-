@@ -28,7 +28,11 @@ import {
 
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
-    return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      return path === '/admin' || path === '/admin/' || path.startsWith('/admin');
+    }
+    return false;
   });
 
   // 1. STATE MANAGEMENT FOR TABS / SECTIONS:
@@ -135,7 +139,8 @@ export default function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+      const path = window.location.pathname.toLowerCase();
+      setIsAdminRoute(path === '/admin' || path === '/admin/' || path.startsWith('/admin'));
     };
 
     window.addEventListener('popstate', handleLocationChange);
@@ -595,17 +600,12 @@ export default function App() {
         onClose={() => setIsAiChatOpen(false)}
         activeTicket={activeTicket}
         onNavigateToTab={(tab) => {
-          if (tab === 'admin') {
-            setIsAdminRoute(true);
-            window.history.pushState({}, '', '/admin');
-          } else {
-            setActiveTab(tab);
-          }
+          setActiveTab(tab);
           setIsAiChatOpen(false);
         }}
       />
 
-      {/* Footer with Discrete Admin Portal Access */}
+      {/* Public Footer (Admin portal completely removed from public UI) */}
       <Footer
         onSelectTab={(tab) => {
           setActiveTab(tab);
@@ -621,11 +621,6 @@ export default function App() {
               }
             }, 50);
           }
-        }}
-        onOpenAdmin={() => {
-          setIsAdminRoute(true);
-          window.history.pushState({}, '', '/admin');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
     </div>

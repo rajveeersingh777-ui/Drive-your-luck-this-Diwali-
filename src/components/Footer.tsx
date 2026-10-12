@@ -5,21 +5,18 @@ import { DiwaliDiya } from './DiwaliDiya';
 
 interface FooterProps {
   onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
-  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
   const handleScrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
-    const element = document.getElementById('registration-form');
+    const element = document.getElementById('registration-step-span') 
+      || document.getElementById('register-form') 
+      || document.querySelector('form');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      // Fallback if ID is missing: search for form tag or input
-      const formElement = document.querySelector('form') || document.querySelector('input');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      window.scrollTo({ top: 800, behavior: 'smooth' });
     }
     onSelectTab('register');
   };
@@ -65,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
               <li>
                 <button
                   onClick={handleScrollToForm}
-                  className="hover:text-amber-200 transition-colors"
+                  className="hover:text-amber-200 transition-colors cursor-pointer"
                 >
                   Enter Contest (Registration)
                 </button>
@@ -73,7 +70,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
               <li>
                 <button
                   onClick={() => onSelectTab('verify')}
-                  className="hover:text-amber-200 transition-colors"
+                  className="hover:text-amber-200 transition-colors cursor-pointer"
                 >
                   Verify Ticket ID
                 </button>
@@ -81,7 +78,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
               <li>
                 <button
                   onClick={() => onSelectTab('referrals')}
-                  className="hover:text-amber-200 transition-colors text-emerald-300"
+                  className="hover:text-amber-200 transition-colors text-emerald-300 cursor-pointer"
                 >
                   Refer & Earn Viral Perks
                 </button>
@@ -89,7 +86,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
               <li>
                 <button
                   onClick={() => onSelectTab('stars-guide')}
-                  className="hover:text-amber-200 transition-colors"
+                  className="hover:text-amber-200 transition-colors cursor-pointer"
                 >
                   Telegram Stars (⭐ XTR) Guide
                 </button>
@@ -97,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
               <li>
                 <button
                   onClick={() => onSelectTab('prizes')}
-                  className="hover:text-amber-200 transition-colors"
+                  className="hover:text-amber-200 transition-colors cursor-pointer"
                 >
                   Festive Rewards & Access
                 </button>
@@ -128,17 +125,11 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenAdmin }) => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar - Completely removed any admin link */}
         <div className="border-t border-amber-950/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-400/60">
           <p>© 2026 Drive Your Luck This Diwali. All rights reserved.</p>
           <div className="flex items-center gap-4 text-amber-300/80">
             <span>Shubh Deepavali 🪔 Apno Ke Saath Khushiyan Manao!</span>
-            <button
-              onClick={onOpenAdmin}
-              className="text-[11px] text-slate-500 hover:text-amber-400 underline transition-colors"
-            >
-              Admin Portal
-            </button>
           </div>
         </div>
       </div>
