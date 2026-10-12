@@ -12,17 +12,19 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAiChat }) => {
   const handleScrollToForm = (e?: React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();
-    const element = document.getElementById('registration-form');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      // Fallback if ID is missing: search for form tag or input
-      const formElement = document.querySelector('form') || document.querySelector('input');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
     onSelectTab('register');
+    setTimeout(() => {
+      const element = document.getElementById('registration-step-span')
+        || document.querySelector('#registration-form-box div div span')
+        || document.getElementById('registration-form-box')
+        || document.getElementById('register-form')
+        || document.querySelector('form');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 800, behavior: 'smooth' });
+      }
+    }, 50);
   };
   return (
     <header className="sticky top-0 z-40 bg-[#0e0618]/90 backdrop-blur-md border-b border-amber-900/30">
@@ -77,16 +79,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
 
         {/* Desktop Nav Controls */}
         <nav className="hidden md:flex items-center gap-1 p-1 bg-amber-950/40 border border-amber-900/40 rounded-xl">
-          <button
+          <a
+            href="#register-form"
             onClick={handleScrollToForm}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all inline-flex items-center justify-center cursor-pointer ${
               activeTab === 'register'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-bold'
                 : 'text-amber-200/80 hover:text-amber-100 hover:bg-amber-900/30'
             }`}
           >
             Claim Pass
-          </button>
+          </a>
           <button
             onClick={() => onSelectTab('verify')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
@@ -144,14 +147,15 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
 
       {/* Mobile Sub-Navigation Bar */}
       <div className="flex md:hidden overflow-x-auto px-4 py-2 border-t border-amber-900/30 gap-1.5 bg-[#0b0414]">
-        <button
+        <a
+          href="#register-form"
           onClick={handleScrollToForm}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg ${
+          className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg inline-flex items-center justify-center cursor-pointer ${
             activeTab === 'register' ? 'bg-amber-500 text-black font-bold' : 'text-amber-200/70'
           }`}
         >
           Claim Pass
-        </button>
+        </a>
         <button
           onClick={() => onSelectTab('verify')}
           className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg ${

@@ -294,7 +294,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
           <div className="border-b border-amber-900/40 pb-5 mb-6">
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 mb-1">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Step 1 of 2: Registration</span>
+              <span id="registration-step-span" className="scroll-mt-28 inline-block">Step 1 of 2: Registration</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white font-['Rozha_One']">
               🪔 Register for Diwali Festive Pass

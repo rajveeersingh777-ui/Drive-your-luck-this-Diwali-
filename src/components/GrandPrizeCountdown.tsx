@@ -12,18 +12,18 @@ export const GrandPrizeCountdown: React.FC<GrandPrizeCountdownProps> = ({
 }) => {
   const handleScrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
-    const element = document.getElementById('registration-form');
+    if (onEnterNow) {
+      onEnterNow(e);
+    }
+    const element = document.getElementById('registration-step-span')
+      || document.querySelector('#registration-form-box div div span')
+      || document.getElementById('registration-form-box')
+      || document.getElementById('register-form')
+      || document.querySelector('form');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      // Fallback if ID is missing: search for form tag or input
-      const formElement = document.querySelector('form') || document.querySelector('input');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-    if (onEnterNow) {
-      onEnterNow(e);
+      window.scrollTo({ top: 800, behavior: 'smooth' });
     }
   };
   // Target Diwali 2026 Grand Draw Night (November 8, 2026 at 20:00:00 IST)
@@ -162,7 +162,7 @@ export const GrandPrizeCountdown: React.FC<GrandPrizeCountdownProps> = ({
         {onEnterNow && (
           <div className="mt-5">
             <a
-              href="#registration-form"
+              href="#register-form"
               onClick={handleScrollToForm}
               className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:px-8 sm:py-3 bg-gradient-to-r from-[#ffd700] via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/30 transition-transform transform hover:scale-105 active:scale-95 cursor-pointer"
             >

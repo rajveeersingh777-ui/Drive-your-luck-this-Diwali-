@@ -15,13 +15,12 @@ import { DiwaliTicket } from './types';
 import { Sparkles, Trophy, Zap, CheckCircle2, ShieldCheck, ArrowRight, Flame } from 'lucide-react';
 
 export default function App() {
-  // React ref for Registration Form container
-  const formRef = useRef<HTMLDivElement>(null);
-
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
   });
 
+  // 1. STATE MANAGEMENT FOR TABS / SECTIONS:
+  // Clean state for active views, defaulting to 'register' (the main landing page registration view)
   const [activeTab, setActiveTab] = useState<'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals'>('register');
   const [activeTicket, setActiveTicket] = useState<DiwaliTicket | null>(null);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
@@ -63,24 +62,24 @@ export default function App() {
     setActiveTicket(ticket);
   };
 
-  // Fail-safe smooth scroll handler matching user requirements using formRef
+  // Robust smooth scroll handler ensuring register tab is active and scrolling to #registration-step-span
   const handleScrollToForm = (e?: React.MouseEvent) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      const element = document.getElementById('registration-form');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActiveTab('register');
+    setTimeout(() => {
+      const targetSpan = document.getElementById('registration-step-span') 
+        || document.querySelector('#registration-form-box div div span')
+        || document.getElementById('registration-form-box')
+        || document.getElementById('register-form') 
+        || document.querySelector('form');
+      if (targetSpan) {
+        targetSpan.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        const formElement = document.querySelector('form') || document.querySelector('input');
-        if (formElement) {
-          formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        window.scrollTo({ top: 800, behavior: 'smooth' });
       }
-    }
+    }, 50);
   };
 
   // If on /admin route: render protected Admin Portal directly
@@ -97,22 +96,33 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0b0414] text-amber-50 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] selection:bg-amber-400 selection:text-slate-950">
-      {/* Navbar (Clean Public UI Only) */}
+      {/* HEADER NAVIGATION BAR */}
       <Navbar
         activeTab={activeTab}
         onSelectTab={(tab) => {
+          setActiveTab(tab);
           if (tab === 'register') {
-            setActiveTab('register');
-            handleScrollToForm();
+            setTimeout(() => {
+              const formEl = document.getElementById('register-form') || document.querySelector('form');
+              if (formEl) {
+                formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 50);
           } else {
-            setActiveTab(tab);
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            setTimeout(() => {
+              const mainElement = document.querySelector('main');
+              if (mainElement) {
+                mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                window.scrollTo({ top: 400, behavior: 'smooth' });
+              }
+            }, 50);
           }
         }}
         onOpenAiChat={() => setIsAiChatOpen(true)}
       />
 
-      {/* Hero Section directly in parent component so formRef is accessible to the button */}
+      {/* Hero Section directly in parent component */}
       <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-amber-950/40">
         {/* Decorative festive ambient glows */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-amber-600/15 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
@@ -145,15 +155,27 @@ export default function App() {
             <span className="text-white font-bold">{CAMPAIGN_INFO.totalPrizePool}</span>!
           </p>
 
-          {/* Main CTA Buttons with formRef smooth scroll */}
+          {/* Main CTA Buttons with Robust Scroll Handler */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button 
+            <button
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setActiveTab('register');
+                setTimeout(() => {
+                  const targetSpan = document.getElementById('registration-step-span') 
+                    || document.querySelector('#registration-form-box div div span')
+                    || document.getElementById('registration-form-box')
+                    || document.getElementById('register-form') 
+                    || document.querySelector('form');
+                  if (targetSpan) {
+                    targetSpan.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    window.scrollTo({ top: 800, behavior: 'smooth' });
+                  }
+                }, 50);
               }}
-              className="group px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 shadow-xl shadow-amber-500/25 flex items-center gap-2.5 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              className="group px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:shadow-[0_0_35px_rgba(251,191,36,0.6)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <span>Fill Registration Form →</span>
               <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1 transition-transform" />
@@ -163,7 +185,14 @@ export default function App() {
               type="button"
               onClick={() => {
                 setActiveTab('verify');
-                window.scrollTo({ top: 350, behavior: 'smooth' });
+                setTimeout(() => {
+                  const mainElement = document.querySelector('main');
+                  if (mainElement) {
+                    mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                  }
+                }, 50);
               }}
               className="px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base text-amber-200 bg-amber-950/40 hover:bg-amber-900/40 border border-amber-500/30 flex items-center gap-2 transition-all hover:text-white"
             >
@@ -254,21 +283,31 @@ export default function App() {
           </div>
         )}
 
-        {/* ALWAYS DIRECTLY RENDERED ON MAIN PAGE DOM - WRAPPED WITH EXPLICIT id, testid, AND ref={formRef} */}
-        <div
-          ref={formRef}
-          id="registration-form"
+        {/* 1. EXPLICIT FORM ID: Container section where the Registration Form is rendered with id="register-form" */}
+        <section
+          id="register-form"
           data-testid="registration-form"
           className="scroll-mt-20 w-full"
         >
-          <RegistrationForm
-            onTicketGenerated={handleTicketGenerated}
-            onNavigateToReferrals={() => {
-              setActiveTab('referrals');
-              window.scrollTo({ top: 300, behavior: 'smooth' });
-            }}
-          />
-        </div>
+          <div id="registration-form-section" className="w-full">
+            <div id="registration-form" className="w-full">
+              <RegistrationForm
+                onTicketGenerated={handleTicketGenerated}
+                onNavigateToReferrals={() => {
+                  setActiveTab('referrals');
+                  setTimeout(() => {
+                    const mainElement = document.querySelector('main');
+                    if (mainElement) {
+                      mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                    }
+                  }, 50);
+                }}
+              />
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Floating AI Assistant Trigger Button */}
@@ -306,12 +345,18 @@ export default function App() {
       {/* Footer with Discrete Admin Portal Access */}
       <Footer
         onSelectTab={(tab) => {
+          setActiveTab(tab);
           if (tab === 'register') {
-            setActiveTab('register');
             handleScrollToForm();
           } else {
-            setActiveTab(tab);
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            setTimeout(() => {
+              const mainElement = document.querySelector('main');
+              if (mainElement) {
+                mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                window.scrollTo({ top: 300, behavior: 'smooth' });
+              }
+            }, 50);
           }
         }}
         onOpenAdmin={() => {
