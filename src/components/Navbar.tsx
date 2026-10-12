@@ -7,9 +7,10 @@ interface NavbarProps {
   activeTab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals';
   onSelectTab: (tab: 'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals') => void;
   onOpenAiChat: () => void;
+  walletBalance?: number;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAiChat }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAiChat, walletBalance = 0 }) => {
   const handleScrollToForm = (e?: React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     onSelectTab('register');
@@ -130,6 +131,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
           >
             <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
             <span>Refer & Earn</span>
+            <span className="ml-0.5 px-1.5 py-0.2 bg-emerald-950/90 text-emerald-300 font-mono text-[10px] rounded-full border border-emerald-400/30">
+              ₹{walletBalance}
+            </span>
           </button>
         </nav>
 
@@ -182,11 +186,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onOpenAi
         </button>
         <button
           onClick={() => onSelectTab('referrals')}
-          className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg ${
+          className={`px-3 py-1 text-xs whitespace-nowrap rounded-lg flex items-center gap-1 ${
             activeTab === 'referrals' ? 'bg-emerald-600 text-white font-bold' : 'text-emerald-300'
           }`}
         >
-          Refer & Earn
+          <span>Refer & Earn</span>
+          <span className="text-[10px] font-mono text-emerald-200">
+            (₹{walletBalance})
+          </span>
         </button>
       </div>
     </header>

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { GrandPrizeCountdown } from './components/GrandPrizeCountdown';
 import { RegistrationForm } from './components/RegistrationForm';
 import { TicketVerifier } from './components/TicketVerifier';
-import { ReferAndEarn } from './components/ReferAndEarn';
+import { ReferAndEarn, ReferralRecord, WithdrawalRecord } from './components/ReferAndEarn';
 import { TelegramStarsGuide } from './components/TelegramStarsGuide';
 import { PrizePoolSection } from './components/PrizePoolSection';
 import { DiwaliAiAssistant } from './components/DiwaliAiAssistant';
@@ -12,7 +13,18 @@ import { AdminPortal } from './components/admin/AdminPortal';
 import { DiwaliDiya } from './components/DiwaliDiya';
 import { CAMPAIGN_INFO } from './utils/constants';
 import { DiwaliTicket } from './types';
-import { Sparkles, Trophy, Zap, CheckCircle2, ShieldCheck, ArrowRight, Flame } from 'lucide-react';
+import { 
+  Sparkles, 
+  Trophy, 
+  Zap, 
+  CheckCircle2, 
+  ShieldCheck, 
+  ArrowRight, 
+  Flame, 
+  Wallet, 
+  IndianRupee, 
+  Gift 
+} from 'lucide-react';
 
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
@@ -33,6 +45,93 @@ export default function App() {
     verifiedEntries: 982,
     grandPrizePool: '10,000+ Festive Slots',
   });
+
+  // ========================================================
+  // 1. USER WALLET & REFER & EARN STATE (EXACT BUSINESS RULES)
+  // ========================================================
+  // Rule 1: Visible Wallet showing user's current earnings balance in INR (₹0 initially)
+  const [walletBalance, setWalletBalance] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dwl_user_wallet_balance');
+      if (saved !== null) {
+        return parseFloat(saved) || 0;
+      }
+    }
+    return 0; // ₹0 initially as specified
+  });
+
+  // Rule 2: Unique referral link / code generation
+  const [referralCode, setReferralCode] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dwl_user_ref_code');
+      if (saved) return saved;
+    }
+    return 'DWL-REF' + Math.floor(100000 + Math.random() * 900000);
+  });
+
+  // Rule 2: Referral list tracking who paid 100 Telegram Stars (⭐ XTR)
+  const [referrals, setReferrals] = useState<ReferralRecord[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dwl_user_referrals');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          // Fallback to default
+        }
+      }
+    }
+    return [
+      {
+        id: 'ref-1',
+        name: 'Aarav Sharma',
+        ticketId: 'DWL-847291',
+        paidStars: false,
+        rewardEarned: 0,
+        date: '12 Oct 2026',
+      },
+      {
+        id: 'ref-2',
+        name: 'Priya Patel',
+        ticketId: 'DWL-639104',
+        paidStars: false,
+        rewardEarned: 0,
+        date: '12 Oct 2026',
+      },
+    ];
+  });
+
+  // Rule 3: Past withdrawals records
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dwl_user_withdrawals');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          // Fallback to empty
+        }
+      }
+    }
+    return [];
+  });
+
+  // Local storage persistence
+  useEffect(() => {
+    localStorage.setItem('dwl_user_wallet_balance', String(walletBalance));
+  }, [walletBalance]);
+
+  useEffect(() => {
+    localStorage.setItem('dwl_user_ref_code', referralCode);
+  }, [referralCode]);
+
+  useEffect(() => {
+    localStorage.setItem('dwl_user_referrals', JSON.stringify(referrals));
+  }, [referrals]);
+
+  useEffect(() => {
+    localStorage.setItem('dwl_user_withdrawals', JSON.stringify(withdrawals));
+  }, [withdrawals]);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -60,6 +159,10 @@ export default function App() {
 
   const handleTicketGenerated = (ticket: DiwaliTicket) => {
     setActiveTicket(ticket);
+    // Align referral code with user's official generated Ticket ID
+    if (ticket.ticketId) {
+      setReferralCode(ticket.ticketId);
+    }
   };
 
   // Robust smooth scroll handler ensuring register tab is active and scrolling to #registration-step-span
@@ -82,6 +185,120 @@ export default function App() {
     }, 50);
   };
 
+  // Switch to Refer & Earn / Wallet tab smoothly
+  const handleOpenWalletTab = () => {
+    setActiveTab('referrals');
+    setTimeout(() => {
+      const mainElement = document.querySelector('main');
+      if (mainElement) {
+        mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 400, behavior: 'smooth' });
+      }
+    }, 50);
+  };
+
+  // ========================================================
+  // REFERRAL BUSINESS LOGIC IMPLEMENTATION
+  // ========================================================
+  // Rule 2: Referral reward of ₹100 INR is added to referrer's wallet
+  // ONLY AFTER the referred person successfully pays 100 Telegram Stars (⭐ XTR)
+  const handleSimulateStarPayment = (referralId: string) => {
+    setReferrals((prev) =>
+      prev.map((item) => {
+        if (item.id === referralId && !item.paidStars) {
+          // Credit ₹100 INR to user's wallet
+          setWalletBalance((curr) => curr + 100);
+          return {
+            ...item,
+            paidStars: true,
+            rewardEarned: 100, // ₹100 credited
+          };
+        }
+        return item;
+      })
+    );
+    try {
+      confetti({
+        particleCount: 70,
+        spread: 80,
+        origin: { y: 0.6 },
+      });
+    } catch (e) {
+      // Fallback
+    }
+  };
+
+  const handleAddReferral = (name: string) => {
+    const newRef: ReferralRecord = {
+      id: 'ref-' + Date.now(),
+      name,
+      ticketId: 'DWL-' + Math.floor(100000 + Math.random() * 900000),
+      paidStars: false, // Starts as pending stars payment
+      rewardEarned: 0,
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+    };
+    setReferrals((prev) => [newRef, ...prev]);
+  };
+
+  // Quick simulator for testing the ₹1,000 withdrawal milestone
+  const handleQuickSimulateGoal = () => {
+    const newItems: ReferralRecord[] = Array.from({ length: 10 }, (_, i) => ({
+      id: 'ref-goal-' + Date.now() + '-' + i,
+      name: `Diwali Friend ${i + 1}`,
+      ticketId: 'DWL-' + Math.floor(100000 + Math.random() * 900000),
+      paidStars: true,
+      rewardEarned: 100,
+      date: 'Just now',
+    }));
+    setReferrals((prev) => [...newItems, ...prev]);
+    setWalletBalance((curr) => curr + 1000);
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 100,
+        origin: { y: 0.5 },
+      });
+    } catch (e) {
+      // Fallback
+    }
+  };
+
+  // Rule 3: Enforce strict minimum withdrawal threshold of ₹1000 INR
+  const handleWithdraw = (amount: number, upiId: string): { success: boolean; error?: string } => {
+    if (walletBalance < 1000) {
+      return {
+        success: false,
+        error: 'Minimum withdrawal amount is ₹1000. Your current wallet balance is ₹' + walletBalance + '. Please refer more friends to reach the ₹1000 threshold.',
+      };
+    }
+
+    if (amount < 1000) {
+      return {
+        success: false,
+        error: 'Minimum withdrawal amount is ₹1000.',
+      };
+    }
+
+    if (amount > walletBalance) {
+      return {
+        success: false,
+        error: `Insufficient balance! Maximum available to withdraw is ₹${walletBalance}.`,
+      };
+    }
+
+    setWalletBalance((curr) => curr - amount);
+    const newWd: WithdrawalRecord = {
+      id: 'wd-' + Date.now(),
+      amount,
+      upiId,
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+      status: 'PROCESSING',
+    };
+    setWithdrawals((prev) => [newWd, ...prev]);
+    return { success: true };
+  };
+
   // If on /admin route: render protected Admin Portal directly
   if (isAdminRoute) {
     return (
@@ -99,11 +316,14 @@ export default function App() {
       {/* HEADER NAVIGATION BAR */}
       <Navbar
         activeTab={activeTab}
+        walletBalance={walletBalance}
         onSelectTab={(tab) => {
           setActiveTab(tab);
           if (tab === 'register') {
             setTimeout(() => {
-              const formEl = document.getElementById('register-form') || document.querySelector('form');
+              const formEl = document.getElementById('registration-step-span') 
+                || document.getElementById('register-form') 
+                || document.querySelector('form');
               if (formEl) {
                 formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
@@ -183,21 +403,11 @@ export default function App() {
 
             <button
               type="button"
-              onClick={() => {
-                setActiveTab('verify');
-                setTimeout(() => {
-                  const mainElement = document.querySelector('main');
-                  if (mainElement) {
-                    mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  } else {
-                    window.scrollTo({ top: 400, behavior: 'smooth' });
-                  }
-                }, 50);
-              }}
-              className="px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base text-amber-200 bg-amber-950/40 hover:bg-amber-900/40 border border-amber-500/30 flex items-center gap-2 transition-all hover:text-white"
+              onClick={handleOpenWalletTab}
+              className="px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base text-emerald-200 bg-emerald-950/50 hover:bg-emerald-900/50 border border-emerald-500/40 flex items-center gap-2 transition-all hover:text-white cursor-pointer shadow-lg shadow-emerald-950/50"
             >
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>Verify Festive Pass</span>
+              <Wallet className="w-4 h-4 text-emerald-400" />
+              <span>Wallet: ₹{walletBalance} (Refer & Earn)</span>
             </button>
           </div>
 
@@ -244,6 +454,48 @@ export default function App() {
         </div>
       </section>
 
+      {/* ========================================================
+          PROMINENT USER WALLET STATUS BANNER (ALWAYS VISIBLE)
+         ======================================================== */}
+      <section className="max-w-4xl mx-auto px-4 pt-6">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#101e2b] to-emerald-950/70 border border-emerald-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Festive Earnings Wallet
+                </span>
+                <span className="text-[10px] font-mono bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+                  Min. Withdrawal: ₹1,000 INR
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span className="text-2xl sm:text-3xl font-black text-white font-mono">
+                  ₹{walletBalance.toLocaleString('en-IN')}
+                </span>
+                <span className="text-[11px] text-emerald-200/70">
+                  (Earn ₹100 per friend who pays 100 ⭐ XTR)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleOpenWalletTab}
+              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <span>Manage Wallet & Referrals</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Dynamic Grand Prize Countdown Timer */}
       <GrandPrizeCountdown
         onEnterNow={handleScrollToForm}
@@ -274,11 +526,22 @@ export default function App() {
           </div>
         )}
 
+        {/* ========================================================
+            WALLET & REFER & EARN DASHBOARD (WHEN TAB IS 'REFERRALS')
+           ======================================================== */}
         {activeTab === 'referrals' && (
           <div className="animate-in fade-in duration-300">
             <ReferAndEarn
               activeTicket={activeTicket}
               onEnterContest={handleScrollToForm}
+              walletBalance={walletBalance}
+              referralCode={referralCode}
+              referrals={referrals}
+              withdrawals={withdrawals}
+              onWithdraw={handleWithdraw}
+              onSimulateStarPayment={handleSimulateStarPayment}
+              onAddReferral={handleAddReferral}
+              onQuickSimulateGoal={handleQuickSimulateGoal}
             />
           </div>
         )}
