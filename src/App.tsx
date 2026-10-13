@@ -29,8 +29,7 @@ import {
 export default function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
     if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase();
-      return path === '/admin' || path === '/admin/' || path.startsWith('/admin');
+      return window.location.search.includes('admin=true');
     }
     return false;
   });
@@ -139,8 +138,7 @@ export default function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      const path = window.location.pathname.toLowerCase();
-      setIsAdminRoute(path === '/admin' || path === '/admin/' || path.startsWith('/admin'));
+      setIsAdminRoute(window.location.search.includes('admin=true'));
     };
 
     window.addEventListener('popstate', handleLocationChange);
@@ -304,13 +302,18 @@ export default function App() {
     return { success: true };
   };
 
-  // If on /admin route: render protected Admin Portal directly
+  // If ?admin=true is present in the URL: render protected Admin Portal directly
   if (isAdminRoute) {
     return (
       <AdminPortal
         onBackToPublic={() => {
           setIsAdminRoute(false);
-          window.history.pushState({}, '', '/');
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('admin');
+            const cleanUrl = url.pathname + (url.search ? url.search : '') + url.hash;
+            window.history.pushState({}, '', cleanUrl || '/');
+          }
         }}
       />
     );
