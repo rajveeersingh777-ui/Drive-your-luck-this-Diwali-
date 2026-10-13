@@ -174,17 +174,19 @@ export default function App() {
     }
   };
 
-  // 3. SMOOTH SCROLL & HERO CTA FIX:
-  // Executes document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   const handleScrollToForm = (e?: React.MouseEvent) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
     setActiveTab('register');
     setTimeout(() => {
-      const registerElement = document.getElementById('register-form');
-      if (registerElement) {
-        registerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const targetDiv = 
+        document.querySelector('[data-registration-form-box="true"]')
+        || document.querySelector('section > div > div#registration-form-box')
+        || document.getElementById('registration-form-box')
+        || document.getElementById('register-form');
+      if (targetDiv) {
+        targetDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         window.scrollTo({ top: 800, behavior: 'smooth' });
       }
@@ -386,7 +388,6 @@ export default function App() {
             <span className="text-white font-bold">{CAMPAIGN_INFO.totalPrizePool}</span>!
           </p>
 
-          {/* 3. HERO CTA BUTTON WITH DIRECT getElementById('register-form')?.scrollIntoView */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <button
               type="button"
@@ -394,7 +395,16 @@ export default function App() {
                 e.preventDefault();
                 setActiveTab('register');
                 setTimeout(() => {
-                  document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  const targetDiv = 
+                    document.querySelector('[data-registration-form-box="true"]')
+                    || document.querySelector('section > div > div#registration-form-box')
+                    || document.getElementById('registration-form-box')
+                    || document.getElementById('register-form');
+                  if (targetDiv) {
+                    targetDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    window.scrollTo({ top: 800, behavior: 'smooth' });
+                  }
                 }, 50);
               }}
               className="group px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:shadow-[0_0_35px_rgba(251,191,36,0.6)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
@@ -553,7 +563,7 @@ export default function App() {
           className="scroll-mt-20 w-full"
         >
           <div id="registration-form-section" className="w-full">
-            <div id="registration-form-box" className="w-full">
+            <div id="registration-form-wrapper" className="w-full">
               <RegistrationForm
                 onTicketGenerated={handleTicketGenerated}
                 onNavigateToReferrals={() => {

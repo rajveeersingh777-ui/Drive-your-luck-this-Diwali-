@@ -290,7 +290,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onTicketGene
           <DiwaliPrizeBreakdownCard />
 
           {/* Registration Form Container */}
-          <div id="registration-form-box" className="bg-[#120722]/90 rounded-2xl border border-amber-900/40 p-6 sm:p-8 shadow-2xl relative scroll-mt-24">
+          <div 
+            id="registration-form-box" 
+            data-registration-form-box="true" 
+            className="bg-[#120722]/90 rounded-2xl border border-amber-900/40 p-6 sm:p-8 shadow-2xl relative scroll-mt-28"
+          >
           <div className="border-b border-amber-900/40 pb-5 mb-6">
             <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 mb-1">
               <Sparkles className="w-4 h-4 text-amber-400" />
