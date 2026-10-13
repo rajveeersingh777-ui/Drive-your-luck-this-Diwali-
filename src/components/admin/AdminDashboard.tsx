@@ -97,6 +97,157 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     });
   };
 
+  // User Referrals State for Admin Verification
+  const [activeUserReferrals, setActiveUserReferrals] = useState<any[]>(() => {
+    try {
+      const raw = localStorage.getItem('dwl_user_referrals');
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return [];
+  });
+
+  const [adminNotification, setAdminNotification] = useState<string | null>(null);
+
+  const handleVerifyRegistration = (ticketId: string) => {
+    setRegistrations((prev) =>
+      prev.map((r) =>
+        r.ticketId === ticketId ? { ...r, status: 'verified', verifiedAt: new Date().toISOString() } : r
+      )
+    );
+
+    try {
+      const raw = localStorage.getItem(`dwl_ticket_${ticketId}`);
+      if (raw) {
+        const t = JSON.parse(raw);
+        t.status = 'verified';
+        t.verifiedAt = new Date().toISOString();
+        localStorage.setItem(`dwl_ticket_${ticketId}`, JSON.stringify(t));
+      }
+    } catch (e) {}
+
+    // Check if this ticket is in activeUserReferrals and credit referrer
+    try {
+      const rawRefs = localStorage.getItem('dwl_user_referrals');
+      if (rawRefs) {
+        const refs = JSON.parse(rawRefs);
+        let found = false;
+        const updatedRefs = refs.map((ref: any) => {
+          if (ref.ticketId === ticketId && (!ref.paidStars || ref.passStatus !== 'Verified')) {
+            found = true;
+            return {
+              ...ref,
+              paidStars: true,
+              passStatus: 'Verified',
+              rewardEarned: 100,
+            };
+          }
+          return ref;
+        });
+
+        if (found) {
+          localStorage.setItem('dwl_user_referrals', JSON.stringify(updatedRefs));
+          setActiveUserReferrals(updatedRefs);
+          const currentBal = parseFloat(localStorage.getItem('dwl_user_wallet_balance') || '0') || 0;
+          const newBal = currentBal + 100;
+          localStorage.setItem('dwl_user_wallet_balance', String(newBal));
+          setAdminNotification(`Ticket ${ticketId} verified! ₹100 referral reward credited to referrer's wallet.`);
+          setTimeout(() => setAdminNotification(null), 4000);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    setAdminNotification(`Ticket ${ticketId} verified successfully for 100 Telegram Stars!`);
+    setTimeout(() => setAdminNotification(null), 4000);
+  };
+
+  const handleVerifyReferralDirect = (referralId: string) => {
+    try {
+      const rawRefs = localStorage.getItem('dwl_user_referrals');
+      let refs = rawRefs ? JSON.parse(rawRefs) : activeUserReferrals;
+      let targetTicketId = '';
+      const updatedRefs = refs.map((ref: any) => {
+        if (ref.id === referralId && (!ref.paidStars || ref.passStatus !== 'Verified')) {
+          targetTicketId = ref.ticketId;
+          return {
+            ...ref,
+            paidStars: true,
+            passStatus: 'Verified',
+            rewardEarned: 100,
+          };
+        }
+        return ref;
+      });
+
+      localStorage.setItem('dwl_user_referrals', JSON.stringify(updatedRefs));
+      setActiveUserReferrals(updatedRefs);
+
+      // Credit ₹100 to referrer wallet
+      const currentBal = parseFloat(localStorage.getItem('dwl_user_wallet_balance') || '0') || 0;
+      const newBal = currentBal + 100;
+      localStorage.setItem('dwl_user_wallet_balance', String(newBal));
+
+      // Also mark ticket verified if exists
+      if (targetTicketId) {
+        setRegistrations((prev) =>
+          prev.map((r) =>
+            r.ticketId === targetTicketId ? { ...r, status: 'verified', verifiedAt: new Date().toISOString() } : r
+          )
+        );
+        try {
+          const rawTicket = localStorage.getItem(`dwl_ticket_${targetTicketId}`);
+          if (rawTicket) {
+            const t = JSON.parse(rawTicket);
+            t.status = 'verified';
+            t.verifiedAt = new Date().toISOString();
+            localStorage.setItem(`dwl_ticket_${targetTicketId}`, JSON.stringify(t));
+          }
+        } catch (e) {}
+      }
+
+      setAdminNotification(`Referral approved! ₹100 successfully credited to referrer's wallet.`);
+      setTimeout(() => setAdminNotification(null), 4000);
+    } catch (e) {
+      console.warn('Error approving referral:', e);
+    }
+  };
+
+  const handleAwardDrawWinner = (referralId: string, rewardName: string, rewardValue: number) => {
+    try {
+      const rawRefs = localStorage.getItem('dwl_user_referrals');
+      let refs = rawRefs ? JSON.parse(rawRefs) : activeUserReferrals;
+      const bonus = Math.round(rewardValue * 0.1);
+
+      const updatedRefs = refs.map((ref: any) => {
+        if (ref.id === referralId) {
+          return {
+            ...ref,
+            paidStars: true,
+            passStatus: 'Verified',
+            drawStatus: 'Winner',
+            wonPrizeName: rewardName,
+            wonPrizeValue: rewardValue,
+            winnerCommissionEarned: bonus,
+          };
+        }
+        return ref;
+      });
+
+      localStorage.setItem('dwl_user_referrals', JSON.stringify(updatedRefs));
+      setActiveUserReferrals(updatedRefs);
+
+      // Credit 10% commission to referrer wallet
+      const currentBal = parseFloat(localStorage.getItem('dwl_user_wallet_balance') || '0') || 0;
+      const newBal = currentBal + bonus;
+      localStorage.setItem('dwl_user_wallet_balance', String(newBal));
+
+      setAdminNotification(`Draw Winner confirmed! ${rewardName} (₹${rewardValue.toLocaleString('en-IN')}) - ₹${bonus.toLocaleString('en-IN')} (10%) credited to referrer's wallet.`);
+      setTimeout(() => setAdminNotification(null), 5000);
+    } catch (e) {
+      console.warn('Error awarding winner:', e);
+    }
+  };
+
   // Fetch registrations & bot health
   const refreshAllData = async () => {
     setIsLoading(true);
@@ -300,6 +451,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
+      {/* Admin Real-Time Action Notification */}
+      {adminNotification && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-[#0e271c] to-emerald-950 border-2 border-emerald-400 text-emerald-200 text-sm font-bold flex items-center gap-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          <span>{adminNotification}</span>
+        </div>
+      )}
+
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-[#140624] border border-amber-500/30 space-y-1">
@@ -486,12 +645,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Registration Time</th>
                 <th className="px-4 py-3">Transaction Ref</th>
+                <th className="px-4 py-3 text-right">Admin Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-amber-950/60 bg-black/30">
               {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
                     No registrations found matching search criteria.
                   </td>
                 </tr>
@@ -530,8 +690,138 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <td className="px-4 py-3 whitespace-nowrap text-[11px] font-mono text-emerald-300">
                       {item.transactionRef || 'Awaiting Bot Claim'}
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                      {item.status === 'verified' ? (
+                        <span className="text-[11px] text-emerald-400 font-bold">✓ Approved</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleVerifyRegistration(item.ticketId)}
+                          className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-bold text-[11px] shadow-sm transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
+                        >
+                          Verify 100 ⭐ (+₹100)
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 👑 STRICT ADMIN REFERRAL VERIFICATION & EARNINGS APPROVAL CENTER */}
+      <div className="bg-[#120524] border-2 border-amber-500/40 rounded-2xl p-6 space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-900/40 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center">
+              <Award className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                Referral Verification & Commission Management (Strict Admin Control)
+                <span className="text-[10px] font-bold bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">
+                  Admin Authority Only
+                </span>
+              </h3>
+              <p className="text-xs text-amber-200/70 mt-0.5">
+                Referral bonuses (₹100) and draw commissions (10%) are credited to user wallets only when approved here by Admin.
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-mono text-amber-300">
+            Registered Referrals: {activeUserReferrals.length}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-amber-900/40">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-black/60 text-amber-300/90 uppercase font-semibold border-b border-amber-900/40">
+              <tr>
+                <th className="py-3 px-4">Referred User</th>
+                <th className="py-3 px-4">Ticket ID</th>
+                <th className="py-3 px-4">Pass Status (100 ⭐ XTR)</th>
+                <th className="py-3 px-4">Draw Status (10% Commission)</th>
+                <th className="py-3 px-4">Referrer Wallet Credit</th>
+                <th className="py-3 px-4 text-right">Admin Approval Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-amber-900/30 bg-[#0d0417]/60">
+              {activeUserReferrals.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 px-4 text-center text-slate-400">
+                    No referral entries awaiting verification at this time.
+                  </td>
+                </tr>
+              ) : (
+                activeUserReferrals.map((ref) => {
+                  const isVerified = ref.paidStars || ref.passStatus === 'Verified';
+                  const isWinner = ref.drawStatus === 'Winner';
+
+                  return (
+                    <tr key={ref.id} className="hover:bg-amber-950/20 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-white">
+                        {ref.name}
+                        <span className="block text-[10px] text-slate-400 font-normal">{ref.date}</span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-amber-300 font-bold">{ref.ticketId}</td>
+                      <td className="py-3 px-4">
+                        {isVerified ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            VERIFIED (100 ⭐ Paid)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-500/40">
+                            <Clock className="w-3 h-3 text-amber-400" />
+                            PENDING VERIFICATION
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {isWinner ? (
+                          <span className="text-yellow-300 font-bold text-[11px] block">
+                            🏆 Draw Winner: {ref.wonPrizeName || 'Festive Reward'} (+₹{(ref.winnerCommissionEarned || 0).toLocaleString('en-IN')})
+                          </span>
+                        ) : isVerified ? (
+                          <span className="text-sky-300 text-[11px]">Entered in Draw</span>
+                        ) : (
+                          <span className="text-slate-400 text-[11px]">Awaiting Pass Approval</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-emerald-400">
+                        {ref.rewardEarned > 0 ? `+₹${ref.rewardEarned}` : '₹0 (Pending)'}
+                        {ref.winnerCommissionEarned ? ` + ₹${ref.winnerCommissionEarned} (10%)` : ''}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-2">
+                          {!isVerified && (
+                            <button
+                              type="button"
+                              onClick={() => handleVerifyReferralDirect(ref.id)}
+                              className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-bold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
+                            >
+                              ✓ Approve 100 ⭐ (+₹100)
+                            </button>
+                          )}
+                          {isVerified && !isWinner && (
+                            <button
+                              type="button"
+                              onClick={() => handleAwardDrawWinner(ref.id, 'Festive Mega Reward', 100000)}
+                              className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 text-slate-950 font-extrabold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
+                            >
+                              🏆 Award Draw Win (+10%)
+                            </button>
+                          )}
+                          {isVerified && isWinner && (
+                            <span className="text-[11px] text-emerald-400 font-bold">✓ Fully Credited</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

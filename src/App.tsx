@@ -93,7 +93,7 @@ export default function App() {
     return 'DWL-REF' + Math.floor(100000 + Math.random() * 900000);
   });
 
-  // Referral tracking records with Pass Status and Draw Status stage indicators
+  // Referral tracking records with strict initial 'Pending Verification' and ₹0 Reward Earned
   const [referrals, setReferrals] = useState<ReferralRecord[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_referrals');
@@ -110,23 +110,20 @@ export default function App() {
         id: 'ref-1',
         name: 'Aarav Sharma',
         ticketId: 'DWL-847291',
-        paidStars: true,
-        passStatus: 'Verified',
-        drawStatus: 'Winner',
-        wonPrizeName: 'Festive Mega Reward (₹75,000)',
-        wonPrizeValue: 75000,
-        winnerCommissionEarned: 7500,
-        rewardEarned: 100,
+        paidStars: false,
+        passStatus: 'Pending',
+        drawStatus: 'Entered',
+        rewardEarned: 0,
         date: '10 Oct 2026',
       },
       {
         id: 'ref-2',
         name: 'Priya Patel',
         ticketId: 'DWL-639104',
-        paidStars: true,
-        passStatus: 'Verified',
+        paidStars: false,
+        passStatus: 'Pending',
         drawStatus: 'Entered',
-        rewardEarned: 100,
+        rewardEarned: 0,
         date: '11 Oct 2026',
       },
       {
@@ -293,102 +290,32 @@ export default function App() {
   };
 
   // ========================================================
-  // REWARD LOGIC: Credit ₹100 INR to referrer ONLY AFTER
-  // the referred user pays 100 Telegram Stars (⭐ XTR)
+  // STRICT ADMIN VERIFICATION SYNC:
+  // Wallet rewards (₹100) are credited only when Admin approves in ?admin=true
   // ========================================================
-  const handleSimulateStarPayment = (referralId: string) => {
-    setReferrals((prev) =>
-      prev.map((item) => {
-        if (item.id === referralId && !item.paidStars) {
-          // Credit ₹100 INR to user's wallet
-          setWalletBalance((curr) => curr + 100);
-          return {
-            ...item,
-            paidStars: true,
-            rewardEarned: 100, // ₹100 credited
-          };
+  useEffect(() => {
+    const handleStorageSync = () => {
+      if (typeof window !== 'undefined') {
+        const savedBal = localStorage.getItem('dwl_user_wallet_balance');
+        if (savedBal !== null) setWalletBalance(parseFloat(savedBal) || 0);
+        const savedRefs = localStorage.getItem('dwl_user_referrals');
+        if (savedRefs) {
+          try {
+            setReferrals(JSON.parse(savedRefs));
+          } catch (e) {}
         }
-        return item;
-      })
-    );
-    try {
-      confetti({
-        particleCount: 70,
-        spread: 80,
-        origin: { y: 0.6 },
-      });
-    } catch (e) {
-      // Fallback
-    }
-  };
-
-  // ========================================================
-  // 10% GRAND PRIZE REFERRAL REWARD RULE:
-  // If referred friend wins Grand Prize, credit 10% cash bonus to wallet
-  // ========================================================
-  const handleSimulateWinner = (referralId: string, prizeName: string, prizeValue: number) => {
-    const commissionBonus = Math.round(prizeValue * 0.1);
-    setReferrals((prev) =>
-      prev.map((item) => {
-        if (item.id === referralId) {
-          return {
-            ...item,
-            paidStars: true,
-            passStatus: 'Verified',
-            drawStatus: 'Winner',
-            wonPrizeName: prizeName,
-            wonPrizeValue: prizeValue,
-            winnerCommissionEarned: commissionBonus,
-          };
+        const savedWds = localStorage.getItem('dwl_user_withdrawals');
+        if (savedWds) {
+          try {
+            setWithdrawals(JSON.parse(savedWds));
+          } catch (e) {}
         }
-        return item;
-      })
-    );
-    // Credit 10% bonus to wallet balance
-    setWalletBalance((curr) => curr + commissionBonus);
-    try {
-      confetti({
-        particleCount: 120,
-        spread: 100,
-        origin: { y: 0.5 },
-      });
-    } catch (e) {}
-  };
-
-  const handleAddReferral = (name: string) => {
-    const newRef: ReferralRecord = {
-      id: 'ref-' + Date.now(),
-      name,
-      ticketId: 'DWL-' + Math.floor(100000 + Math.random() * 900000),
-      paidStars: false,
-      rewardEarned: 0,
-      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+      }
     };
-    setReferrals((prev) => [newRef, ...prev]);
-  };
 
-  // Simulator to demonstrate the ₹1,000 withdrawal milestone
-  const handleQuickSimulateGoal = () => {
-    const newItems: ReferralRecord[] = Array.from({ length: 10 }, (_, i) => ({
-      id: 'ref-goal-' + Date.now() + '-' + i,
-      name: `Diwali Friend ${i + 1}`,
-      ticketId: 'DWL-' + Math.floor(100000 + Math.random() * 900000),
-      paidStars: true,
-      rewardEarned: 100,
-      date: 'Just now',
-    }));
-    setReferrals((prev) => [...newItems, ...prev]);
-    setWalletBalance((curr) => curr + 1000);
-    try {
-      confetti({
-        particleCount: 100,
-        spread: 100,
-        origin: { y: 0.5 },
-      });
-    } catch (e) {
-      // Fallback
-    }
-  };
+    window.addEventListener('storage', handleStorageSync);
+    return () => window.removeEventListener('storage', handleStorageSync);
+  }, []);
 
   // ========================================================
   // WITHDRAWAL RULE: Enforce strict minimum threshold of ₹1000 INR
@@ -435,6 +362,16 @@ export default function App() {
         onBackToPublic={() => {
           setIsAdminMode(false);
           if (typeof window !== 'undefined') {
+            const savedBal = localStorage.getItem('dwl_user_wallet_balance');
+            if (savedBal !== null) setWalletBalance(parseFloat(savedBal) || 0);
+            const savedRefs = localStorage.getItem('dwl_user_referrals');
+            if (savedRefs) {
+              try { setReferrals(JSON.parse(savedRefs)); } catch (e) {}
+            }
+            const savedWds = localStorage.getItem('dwl_user_withdrawals');
+            if (savedWds) {
+              try { setWithdrawals(JSON.parse(savedWds)); } catch (e) {}
+            }
             const url = new URL(window.location.href);
             url.searchParams.delete('admin');
             const cleanUrl = url.pathname + (url.search ? url.search : '') + url.hash;
@@ -738,7 +675,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. FULL WALLET & REFER & EARN DASHBOARD */}
+        {/* 2. FULL WALLET & REFER & EARN DASHBOARD (STRICT ADMIN VERIFICATION) */}
         {activeTab === 'referrals' && (
           <div className="animate-in fade-in duration-300">
             <ReferAndEarn
@@ -749,10 +686,6 @@ export default function App() {
               referrals={referrals}
               withdrawals={withdrawals}
               onWithdraw={handleWithdraw}
-              onSimulateStarPayment={handleSimulateStarPayment}
-              onSimulateWinner={handleSimulateWinner}
-              onAddReferral={handleAddReferral}
-              onQuickSimulateGoal={handleQuickSimulateGoal}
             />
           </div>
         )}

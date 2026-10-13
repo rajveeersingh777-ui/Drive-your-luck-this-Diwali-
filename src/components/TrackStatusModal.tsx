@@ -133,40 +133,27 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
             fullName: 'Aarav Sharma',
             mobile: '+91 98765 43210',
             email: 'aarav.sharma@example.com',
-            walletBalance: 7700,
+            walletBalance: 0,
             referrals: [
               {
                 id: 'ref-demo-1',
                 name: 'Kavita Verma',
                 ticketId: 'DWL-912834',
-                paidStars: true,
-                passStatus: 'Verified',
-                drawStatus: 'Winner',
-                wonPrizeName: 'Festive Mega Reward (₹75,000)',
-                wonPrizeValue: 75000,
-                winnerCommissionEarned: 7500,
-                rewardEarned: 100,
+                paidStars: false,
+                passStatus: 'Pending',
+                drawStatus: 'Entered',
+                rewardEarned: 0,
                 date: '10 Oct 2026',
               },
               {
                 id: 'ref-demo-2',
                 name: 'Rohan Mehra',
                 ticketId: 'DWL-492015',
-                paidStars: true,
-                passStatus: 'Verified',
-                drawStatus: 'Entered',
-                rewardEarned: 100,
-                date: '11 Oct 2026',
-              },
-              {
-                id: 'ref-demo-3',
-                name: 'Neha Gupta',
-                ticketId: 'DWL-783920',
                 paidStars: false,
                 passStatus: 'Pending',
                 drawStatus: 'Entered',
                 rewardEarned: 0,
-                date: '12 Oct 2026',
+                date: '11 Oct 2026',
               },
             ],
             withdrawals: [],
@@ -177,7 +164,7 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
               city: 'Mumbai',
               state: 'Maharashtra',
               pincode: '400001',
-              status: 'verified',
+              status: 'pending_payment',
               feeStars: 100,
               feeInr: 199,
               telegramBotHandle: '@DriveYourLuckDiwaliBot',
@@ -191,14 +178,16 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
             fullName: 'Priya Patel',
             mobile: '+91 98200 98200',
             email: 'priya.patel@example.com',
-            walletBalance: 1100,
+            walletBalance: 0,
             referrals: [
               {
                 id: 'ref-demo-p1',
                 name: 'Amit Trivedi',
                 ticketId: 'DWL-301928',
-                paidStars: true,
-                rewardEarned: 100,
+                paidStars: false,
+                passStatus: 'Pending',
+                drawStatus: 'Entered',
+                rewardEarned: 0,
                 date: '12 Oct 2026',
               },
             ],
@@ -391,33 +380,21 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
           </button>
         </form>
 
-        {/* Demo Fast-Test Helpers */}
+        {/* Accepted Formats Info */}
         <div className="mt-5 pt-4 border-t border-amber-950/60 text-left">
           <span className="text-[11px] text-amber-300/70 font-semibold block mb-2">
-            Quick Test Identifiers:
+            Accepted Search Formats:
           </span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickSelect('DWL-847291')}
-              className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-amber-300 border border-amber-500/20 cursor-pointer"
-            >
-              DWL-847291 (Aarav · ₹200)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickSelect('DWL-639104')}
-              className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-300 border border-emerald-500/20 cursor-pointer"
-            >
-              DWL-639104 (Priya · ₹1,100)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickSelect('9876543210')}
-              className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-amber-200 border border-amber-500/20 cursor-pointer"
-            >
-              Mobile: 9876543210
-            </button>
+          <div className="flex flex-wrap gap-2 text-[11px] font-mono text-amber-200/80">
+            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-amber-500/20">
+              Ticket ID: DWL-XXXXXX
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-amber-500/20">
+              Mobile: 10 Digits
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-amber-500/20">
+              Email Address
+            </span>
           </div>
         </div>
 

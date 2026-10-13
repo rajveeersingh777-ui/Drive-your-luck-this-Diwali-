@@ -20,14 +20,12 @@ import {
   Clock,
   IndianRupee,
   RefreshCw,
-  PlusCircle,
   ExternalLink,
   Trophy,
   Award,
   Zap,
   HelpCircle,
-  Car,
-  Bike
+  Lock
 } from 'lucide-react';
 import { DiwaliTicket } from '../types';
 
@@ -36,13 +34,13 @@ export interface ReferralRecord {
   name: string;
   ticketId: string;
   paidStars: boolean;
-  rewardEarned: number; // ₹100 if paidStars is true, ₹0 if false
+  rewardEarned: number; // ₹100 if verified by admin, ₹0 if pending
   date: string;
   passStatus?: 'Pending' | 'Verified';
   drawStatus?: 'Entered' | 'Winner';
   wonPrizeName?: string;
   wonPrizeValue?: number;
-  winnerCommissionEarned?: number; // 10% cash bonus
+  winnerCommissionEarned?: number; // 10% cash bonus upon draw win
 }
 
 export interface WithdrawalRecord {
@@ -61,10 +59,6 @@ interface ReferAndEarnProps {
   referrals: ReferralRecord[];
   withdrawals: WithdrawalRecord[];
   onWithdraw: (amount: number, upiId: string) => { success: boolean; error?: string };
-  onSimulateStarPayment: (referralId: string) => void;
-  onSimulateWinner?: (referralId: string, prizeName: string, prizeValue: number) => void;
-  onAddReferral: (name: string) => void;
-  onQuickSimulateGoal: () => void;
 }
 
 export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
@@ -75,10 +69,6 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
   referrals,
   withdrawals,
   onWithdraw,
-  onSimulateStarPayment,
-  onSimulateWinner,
-  onAddReferral,
-  onQuickSimulateGoal,
 }) => {
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -86,7 +76,6 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
   const [upiId, setUpiId] = useState<string>('');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [newFriendName, setNewFriendName] = useState<string>('');
 
   const referralLink = `https://drive-your-luck-this-diwali.vercel.app?ref=${referralCode}`;
   const shareText = `🪔 Shubh Deepavali! Secure your exclusive Diwali Festive Pass for 100 Telegram Stars (⭐ XTR) and unlock access to the ₹5 Crore Mega Pool! Use my referral code ${referralCode} or claim here: ${referralLink}`;
@@ -125,9 +114,9 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
 
     const amountNum = parseFloat(withdrawAmount) || walletBalance;
 
-    // RULE: Strict minimum withdrawal threshold of ₹1000 INR
+    // Strict minimum withdrawal threshold of ₹1000 INR
     if (walletBalance < 1000) {
-      setValidationError('Minimum withdrawal amount is ₹1000. Your current wallet balance is ₹' + walletBalance + '. Please refer more friends to reach the ₹1000 threshold.');
+      setValidationError('Minimum withdrawal amount is ₹1000. Your current verified wallet balance is ₹' + walletBalance + '. Please refer more friends and have their entries verified by Admin to reach the ₹1000 threshold.');
       return;
     }
 
@@ -137,7 +126,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
     }
 
     if (amountNum > walletBalance) {
-      setValidationError(`Cannot withdraw ₹${amountNum}. Your maximum available wallet balance is ₹${walletBalance}.`);
+      setValidationError(`Cannot withdraw ₹${amountNum}. Your maximum available verified wallet balance is ₹${walletBalance}.`);
       return;
     }
 
@@ -151,7 +140,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
     if (!res.success) {
       setValidationError(res.error || 'Withdrawal failed.');
     } else {
-      setSuccessMessage(`₹${amountNum} withdrawal request submitted successfully to ${cleanUpi}. Amount will be credited to your account within 24 hours!`);
+      setSuccessMessage(`₹${amountNum} withdrawal request submitted successfully to ${cleanUpi}. Amount will be credited to your account within 24 hours after Admin processing!`);
       setWithdrawAmount('');
       setUpiId('');
       try {
@@ -164,13 +153,6 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
         // Confetti fallback
       }
     }
-  };
-
-  const handleAddNewReferralClick = (e: React.FormEvent) => {
-    e.preventDefault();
-    const name = newFriendName.trim() || `Friend #${referrals.length + 1}`;
-    onAddReferral(name);
-    setNewFriendName('');
   };
 
   return (
@@ -210,7 +192,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                   10% FLAT
                 </span>
                 <span className="text-[10px] text-amber-200/70 block">
-                  On Every Draw Win
+                  Official Draw Verified
                 </span>
               </div>
             </div>
@@ -238,18 +220,18 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                   Festive Earnings Wallet
                 </h2>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/40">
-                  Live Balance
+                  Verified Balance
                 </span>
               </div>
               <p className="text-xs text-emerald-200/70 mt-0.5">
-                Earn ₹100 per verified friend + 10% Cash Bonus if any referred friend wins a Grand Prize!
+                Earn ₹100 per Admin-verified friend + 10% Cash Bonus if any referred friend wins a Mega Reward!
               </p>
             </div>
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/30 text-xs font-semibold text-amber-300">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Instant UPI Payouts</span>
+            <span>Admin-Protected Payouts</span>
           </div>
         </div>
 
@@ -260,14 +242,14 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                 <IndianRupee className="w-3.5 h-3.5 text-emerald-400" />
-                Current Earnings Balance (INR)
+                Current Verified Balance (INR)
               </span>
               <div className="flex items-center gap-2 text-[10px]">
                 <span className="font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-                  Direct: ₹100 / pass
+                  Direct: ₹100 / verified pass
                 </span>
                 <span className="font-mono text-yellow-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30 font-bold">
-                  Winner: +10% Prize
+                  Winner: +10% Reward
                 </span>
               </div>
             </div>
@@ -287,7 +269,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                 </span>
                 <span className={walletBalance >= 1000 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-medium'}>
                   {walletBalance >= 1000 
-                    ? '🎉 Threshold reached! Ready to withdraw' 
+                    ? '🎉 Threshold reached! Ready to submit withdrawal' 
                     : `₹${Math.max(0, 1000 - walletBalance)} more needed`}
                 </span>
               </div>
@@ -317,16 +299,14 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
 
             <div className="p-3.5 rounded-xl bg-black/40 border border-amber-900/50 flex flex-col justify-center">
               <span className="text-[11px] text-yellow-300 font-medium flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-                10% Winner Bonuses
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                Pending Admin Check
               </span>
-              <p className="text-xl sm:text-2xl font-bold text-yellow-300 font-mono mt-0.5">
-                {winnersCount} {winnersCount === 1 ? 'Winner' : 'Winners'}
-                {totalCommissionWon > 0 && (
-                  <span className="text-xs font-bold text-emerald-400 ml-1.5">
-                    (+₹{totalCommissionWon.toLocaleString('en-IN')})
-                  </span>
-                )}
+              <p className="text-xl sm:text-2xl font-bold text-amber-200 font-mono mt-0.5">
+                {pendingReferralsCount}
+                <span className="text-xs font-normal text-amber-400/80 ml-1.5">
+                  (₹0 credited until verified)
+                </span>
               </p>
             </div>
           </div>
@@ -339,14 +319,14 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <ArrowDownToLine className="w-4 h-4 text-emerald-400" />
-              <span>Withdraw Earnings to Bank via UPI</span>
+              <span>Withdraw Verified Earnings to Bank via UPI</span>
             </h3>
             <span className="text-[11px] font-semibold text-amber-300 bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-500/30">
               🔒 Minimum Withdrawal: ₹1,000 INR
             </span>
           </div>
 
-          {/* Validation Alert for Rule */}
+          {/* Validation Alert */}
           {validationError && (
             <div className="mb-4 p-3.5 rounded-xl bg-red-950/70 border border-red-500/50 text-red-200 text-xs sm:text-sm flex items-start gap-2.5 animate-in fade-in duration-200">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
@@ -422,7 +402,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <div className="text-[11px] text-emerald-300/70 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Zero processing fees · Direct UPI bank transfer</span>
+                <span>Zero processing fees · Direct UPI bank transfer processed upon Admin review</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -436,7 +416,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                 >
                   <ArrowDownToLine className="w-4 h-4" />
                   <span>
-                    {walletBalance >= 1000 ? 'Submit UPI Withdrawal' : 'Check ₹1,000 Withdrawal Rule'}
+                    {walletBalance >= 1000 ? 'Submit UPI Withdrawal' : 'Check ₹1,000 Threshold Rule'}
                   </span>
                 </button>
               </div>
@@ -486,7 +466,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
             How You Earn: 2 Powerful Referral Streams
           </h2>
           <p className="text-xs sm:text-sm text-amber-200/80">
-            Har ek referral se do taraf se kamaai: Entry pass kharidte hi instant cash, aur lucky draw jeetne par grand 10% commission!
+            Har referral se do taraf se kamaai: Entry pass admin verify hote hi ₹100 instant cash, aur lucky draw jeetne par grand 10% commission!
           </p>
         </div>
 
@@ -504,10 +484,10 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
               <span>Direct Referral Bonus: ₹100 INR</span>
             </h4>
             <p className="text-xs text-emerald-200/80 leading-relaxed">
-              Credited upon friend's successful <strong>100 Telegram Stars (⭐ XTR)</strong> pass purchase and verification.
+              Credited to your wallet <strong className="text-white">only after</strong> the Admin manually marks your friend's <strong>100 Telegram Stars (⭐ XTR)</strong> pass payment as verified in the Admin Panel.
             </p>
             <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-[11px] text-emerald-300 font-mono">
-              Formula: 10 Verified Friends × ₹100 = ₹1,000 (Instant Minimum Withdrawal Milestone)
+              Formula: 10 Admin-Verified Friends × ₹100 = ₹1,000 (Minimum Withdrawal Milestone)
             </div>
           </div>
 
@@ -605,55 +585,28 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
       </section>
 
       {/* ========================================================
-          6. DETAILED STAGE INDICATORS & REFERRALS TABLE
+          6. DETAILED STAGE INDICATORS & STRICT ADMIN-VERIFIED REFERRALS TABLE
          ======================================================== */}
       <section className="bg-[#120722]/90 border border-amber-900/40 rounded-2xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-amber-900/40 pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-1">
               <Users className="w-4 h-4 text-amber-400" />
-              <span>Detailed Stage Tracking & Verification</span>
+              <span>Strict Admin Referral Verification & Stage Tracking</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-bold text-white font-['Rozha_One']">
-              Your Referred Friends & Stages
+              Your Referred Friends & Verification Status
             </h3>
             <p className="text-xs text-amber-200/70 mt-0.5">
-              Live tracking for both <strong>Pass Status</strong> (100 Stars) and <strong>Draw Status</strong> (Entered / Winner 10% Bonus).
+              Rewards are credited only after the Admin manually verifies the 100 Telegram Stars payment in the secure Admin Portal.
             </p>
           </div>
 
-          {/* Interactive Fast Test Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={onQuickSimulateGoal}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 cursor-pointer"
-              title="Simulates 10 friends paying 100 Stars to reach the ₹1,000 withdrawal milestone instantly"
-            >
-              <Flame className="w-3.5 h-3.5" />
-              <span>⚡ Fast-Test ₹1,000 Goal</span>
-            </button>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-500/30 text-amber-300 text-xs font-medium">
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
+            <span>Admin-Secured Wallet Ledger</span>
           </div>
         </div>
-
-        {/* Add Demo Referral Input Form */}
-        <form onSubmit={handleAddNewReferralClick} className="flex flex-wrap items-center gap-2 bg-black/40 p-3 rounded-xl border border-amber-900/40">
-          <span className="text-xs font-semibold text-amber-300">Invite Test Friend:</span>
-          <input
-            type="text"
-            placeholder="Friend's Name (e.g. Vikram Singhania)"
-            value={newFriendName}
-            onChange={(e) => setNewFriendName(e.target.value)}
-            className="flex-1 min-w-[200px] px-3 py-1.5 rounded-lg bg-black/80 border border-amber-500/30 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400"
-          />
-          <button
-            type="submit"
-            className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Add Referral Entry</span>
-          </button>
-        </form>
 
         {/* Referral Tracking Table */}
         <div className="overflow-x-auto rounded-xl border border-amber-900/40">
@@ -664,15 +617,15 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                 <th className="py-3 px-4">Ticket ID</th>
                 <th className="py-3 px-4">Pass Status (100 ⭐ XTR)</th>
                 <th className="py-3 px-4">Draw Status (10% Bonus)</th>
-                <th className="py-3 px-4">Total Earned</th>
-                <th className="py-3 px-4 text-right">Actions / Demo Sim</th>
+                <th className="py-3 px-4">Wallet Reward</th>
+                <th className="py-3 px-4 text-right">Verification Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-amber-900/30 bg-[#0d0417]/60">
               {referrals.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-6 px-4 text-center text-slate-400">
-                    No referrals yet. Share your link above or click "Invite Test Friend" to test!
+                    No referrals yet. Share your unique referral link above to start inviting friends!
                   </td>
                 </tr>
               ) : (
@@ -698,20 +651,20 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                           <div className="space-y-0.5">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
                               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                              Verified (₹100 Earned)
+                              Verified (100 ⭐ Paid)
                             </span>
                             <span className="block text-[10px] text-emerald-400/80 font-medium">
-                              100 Stars payment completed & verified
+                              Approved by Admin
                             </span>
                           </div>
                         ) : (
                           <div className="space-y-0.5">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
                               <Clock className="w-3 h-3 text-amber-400" />
-                              Pending (Awaiting Stars)
+                              Pending Verification
                             </span>
                             <span className="block text-[10px] text-amber-200/70">
-                              Joined via link, 100 ⭐ payment pending
+                              Awaiting Admin check
                             </span>
                           </div>
                         )}
@@ -723,10 +676,10 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                           <div className="space-y-0.5">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow-sm">
                               <Trophy className="w-3 h-3 text-slate-950" />
-                              Winner (10% Bonus Earned)
+                              Mega Reward Winner (10% Bonus Earned)
                             </span>
                             <span className="block text-[10px] text-yellow-300 font-bold">
-                              Won {ref.wonPrizeName || 'Festive Grand Prize'} (+₹{(ref.winnerCommissionEarned || 0).toLocaleString('en-IN')})
+                              Won {ref.wonPrizeName || 'Festive Reward'} (+₹{(ref.winnerCommissionEarned || 0).toLocaleString('en-IN')})
                             </span>
                           </div>
                         ) : isVerifiedPass ? (
@@ -742,10 +695,10 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                         ) : (
                           <div className="space-y-0.5">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-700">
-                              Not Entered Yet
+                              Pending Pass Verification
                             </span>
                             <span className="block text-[10px] text-slate-500">
-                              Pending pass verification
+                              Enters draw after admin approval
                             </span>
                           </div>
                         )}
@@ -764,41 +717,24 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                           ) : isVerifiedPass ? (
                             <span className="text-[10px] text-emerald-300/80">Direct pass reward</span>
                           ) : (
-                            <span className="text-[10px] text-amber-300/60">Locked (Pending)</span>
+                            <span className="text-[10px] text-amber-300/60">₹0 (Pending Admin)</span>
                           )}
                         </div>
                       </td>
 
-                      {/* Action / Simulation Column */}
+                      {/* Verification Status Column */}
                       <td className="py-3 px-4 text-right">
-                        <div className="flex flex-col items-end gap-1.5">
-                          {!isVerifiedPass && (
-                            <button
-                              type="button"
-                              onClick={() => onSimulateStarPayment(ref.id)}
-                              className="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
-                            >
-                              Simulate 100 ⭐ Paid (+₹100)
-                            </button>
-                          )}
-
-                          {isVerifiedPass && !isWinner && onSimulateWinner && (
-                            <button
-                              type="button"
-                              onClick={() => onSimulateWinner(ref.id, 'Festive Mega Reward', 100000)}
-                              className="px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-extrabold text-[11px] rounded-lg shadow-md transition-transform active:scale-95 cursor-pointer"
-                              title="Simulate friend winning Festive Mega Reward -> You get 10% cash bonus!"
-                            >
-                              🎉 Simulate Winner (+10% Bonus)
-                            </button>
-                          )}
-
-                          {isWinner && (
-                            <span className="text-[11px] text-emerald-400 font-bold">
-                              ✓ 10% Commission Credited
-                            </span>
-                          )}
-                        </div>
+                        {isVerifiedPass ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Verified by Admin (+₹100)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 font-medium bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                            <Clock className="w-3.5 h-3.5" />
+                            Waiting for Admin Check
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -830,10 +766,10 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
 
           <div className="p-3.5 rounded-xl bg-[#140624] border border-amber-900/40 space-y-1">
             <strong className="text-white block font-bold text-xs">
-              2. Direct ₹100 Referral Reward
+              2. Strict Admin Verification for ₹100
             </strong>
             <p>
-              Direct <span className="text-emerald-300 font-bold">₹100 INR</span> reward is unlocked and credited <span className="underline decoration-emerald-400 font-semibold">only after</span> valid 100 Telegram Stars (⭐ XTR) festive pass payment is verified by official bot/admin.
+              Direct <span className="text-emerald-300 font-bold">₹100 INR</span> reward is credited to the referrer's wallet <span className="underline decoration-emerald-400 font-semibold">strictly after</span> the Admin verifies the 100 Telegram Stars pass payment in the Admin Portal.
             </p>
           </div>
 
