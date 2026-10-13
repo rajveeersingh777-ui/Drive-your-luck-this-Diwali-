@@ -577,26 +577,42 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                     </td>
                     <td className="py-3 px-4">
                       {ref.paidStars ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          100 ⭐ XTR Paid
-                        </span>
+                        <div className="space-y-0.5">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            Verified (₹100 Earned)
+                          </span>
+                          <span className="block text-[10px] text-emerald-400/80 font-medium">
+                            100 Stars payment completed & verified by admin
+                          </span>
+                        </div>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
-                          <Clock className="w-3 h-3 text-amber-400" />
-                          Pending Payment
-                        </span>
+                        <div className="space-y-0.5">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
+                            <Clock className="w-3 h-3 text-amber-400" />
+                            Pending (Awaiting Stars)
+                          </span>
+                          <span className="block text-[10px] text-amber-200/70">
+                            Joined via link, but hasn't completed 100 Stars (⭐ XTR) payment yet
+                          </span>
+                        </div>
                       )}
                     </td>
                     <td className="py-3 px-4">
                       {ref.paidStars ? (
-                        <span className="font-bold text-emerald-400 font-mono text-sm">
-                          +₹100 INR
-                        </span>
+                        <div>
+                          <span className="font-extrabold text-emerald-400 font-mono text-sm block">
+                            +₹100 INR
+                          </span>
+                          <span className="text-[10px] text-emerald-300/80">Added to balance</span>
+                        </div>
                       ) : (
-                        <span className="text-slate-400 font-mono">
-                          ₹0 (Pending 100 Stars)
-                        </span>
+                        <div>
+                          <span className="text-slate-400 font-mono text-xs block">
+                            ₹0 (Locked)
+                          </span>
+                          <span className="text-[10px] text-amber-300/60">Requires 100 ⭐ XTR</span>
+                        </div>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">

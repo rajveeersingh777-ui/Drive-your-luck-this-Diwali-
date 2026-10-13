@@ -10,6 +10,7 @@ import { PrizePoolSection } from './components/PrizePoolSection';
 import { DiwaliAiAssistant } from './components/DiwaliAiAssistant';
 import { Footer } from './components/Footer';
 import { AdminPortal } from './components/admin/AdminPortal';
+import { TrackStatusModal, UserSessionData } from './components/TrackStatusModal';
 import { DiwaliDiya } from './components/DiwaliDiya';
 import { CAMPAIGN_INFO } from './utils/constants';
 import { DiwaliTicket } from './types';
@@ -20,7 +21,9 @@ import {
   CheckCircle2, 
   ArrowRight, 
   Flame, 
-  Wallet 
+  Wallet,
+  Search,
+  UserCheck 
 } from 'lucide-react';
 
 export default function App() {
@@ -55,6 +58,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals'>('register');
   const [activeTicket, setActiveTicket] = useState<DiwaliTicket | null>(null);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isTrackModalOpen, setIsTrackModalOpen] = useState(false);
+  const [sessionAlert, setSessionAlert] = useState<{ name: string; ticketId: string; balance: number } | null>(null);
   const [, setStats] = useState<{
     totalEntries: number;
     verifiedEntries: number;
@@ -167,11 +172,75 @@ export default function App() {
       .catch((err) => console.warn('Could not fetch stats:', err));
   }, []);
 
+  // Sync user registration and wallet details in localStorage registry for instant lookup
+  const syncUserToRegistry = (
+    ticket: DiwaliTicket,
+    balance: number,
+    refList: ReferralRecord[],
+    wdList: WithdrawalRecord[]
+  ) => {
+    try {
+      const raw = localStorage.getItem('dwl_user_registry');
+      let registry: any[] = raw ? JSON.parse(raw) : [];
+      const cleanMobile = ticket.maskedMobile || '';
+      const existingIdx = registry.findIndex(
+        (u) => u.ticketId === ticket.ticketId || (cleanMobile && u.mobile && u.mobile === cleanMobile)
+      );
+      const userRecord = {
+        ticketId: ticket.ticketId,
+        fullName: ticket.fullName,
+        mobile: cleanMobile,
+        walletBalance: balance,
+        referrals: refList,
+        withdrawals: wdList,
+        ticket,
+        updatedAt: new Date().toISOString(),
+      };
+      if (existingIdx >= 0) {
+        registry[existingIdx] = { ...registry[existingIdx], ...userRecord };
+      } else {
+        registry.unshift(userRecord);
+      }
+      localStorage.setItem('dwl_user_registry', JSON.stringify(registry));
+    } catch (e) {
+      console.warn('Error syncing user to registry:', e);
+    }
+  };
+
   const handleTicketGenerated = (ticket: DiwaliTicket) => {
     setActiveTicket(ticket);
     if (ticket.ticketId) {
       setReferralCode(ticket.ticketId);
     }
+    syncUserToRegistry(ticket, walletBalance, referrals, withdrawals);
+  };
+
+  // Restore user session from modal lookup
+  const handleSessionRestored = (userData: UserSessionData) => {
+    setActiveTicket(userData.ticket || null);
+    setReferralCode(userData.ticketId);
+    setWalletBalance(userData.walletBalance);
+    setReferrals(userData.referrals);
+    setWithdrawals(userData.withdrawals);
+    setActiveTab('referrals');
+    setSessionAlert({
+      name: userData.fullName,
+      ticketId: userData.ticketId,
+      balance: userData.walletBalance,
+    });
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    } catch (e) {}
+    setTimeout(() => {
+      const mainElement = document.querySelector('main');
+      if (mainElement) {
+        mainElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleScrollToForm = (e?: React.MouseEvent) => {
@@ -353,6 +422,7 @@ export default function App() {
           }
         }}
         onOpenAiChat={() => setIsAiChatOpen(true)}
+        onOpenTrackModal={() => setIsTrackModalOpen(true)}
       />
 
       {/* Hero Section */}
@@ -420,6 +490,15 @@ export default function App() {
             >
               <Wallet className="w-4 h-4 text-emerald-400" />
               <span>Wallet: ₹{walletBalance} (Refer & Earn)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsTrackModalOpen(true)}
+              className="px-5 py-3.5 rounded-xl font-bold text-sm sm:text-base text-amber-200 bg-gradient-to-r from-amber-950/80 to-[#1e0f06] hover:from-amber-900/80 hover:to-[#2b160a] border border-amber-500/50 flex items-center gap-2 transition-all hover:text-white cursor-pointer shadow-lg shadow-amber-950/50 hover:scale-[1.02] active:scale-95"
+            >
+              <UserCheck className="w-4 h-4 text-amber-400" />
+              <span>Track Referral Status / Login</span>
             </button>
           </div>
 
@@ -493,7 +572,16 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsTrackModalOpen(true)}
+              className="px-3.5 py-2 bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Search className="w-3.5 h-3.5 text-amber-400" />
+              <span>Track / Switch User</span>
+            </button>
+
             <button
               type="button"
               onClick={handleOpenWalletTab}
@@ -504,6 +592,30 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* User Session Restored Notification Banner */}
+        {sessionAlert && (
+          <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/90 via-[#0f241a] to-emerald-950/90 border border-emerald-500/50 shadow-lg flex items-center justify-between gap-3 text-xs text-emerald-200 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div>
+                <span className="font-bold text-white text-xs sm:text-sm block">
+                  Active Session Restored: {sessionAlert.name}
+                </span>
+                <span className="text-[11px] text-emerald-300/80">
+                  Ticket ID: <strong className="font-mono text-amber-300">{sessionAlert.ticketId}</strong> · Live Wallet Balance: <strong className="text-emerald-300 font-mono">₹{sessionAlert.balance} INR</strong>
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSessionAlert(null)}
+              className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-white/5 hover:bg-white/10 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Dynamic Grand Prize Countdown Timer */}
@@ -627,6 +739,15 @@ export default function App() {
             }, 50);
           }
         }}
+      />
+
+      {/* Track Status / Existing User Login Modal */}
+      <TrackStatusModal
+        isOpen={isTrackModalOpen}
+        onClose={() => setIsTrackModalOpen(false)}
+        onSessionRestored={handleSessionRestored}
+        currentTicketId={activeTicket?.ticketId || referralCode}
+        onNavigateToRegister={handleScrollToForm}
       />
     </div>
   );
