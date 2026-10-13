@@ -18,28 +18,44 @@ import {
   Trophy, 
   Zap, 
   CheckCircle2, 
-  ShieldCheck, 
   ArrowRight, 
   Flame, 
-  Wallet, 
-  IndianRupee, 
-  Gift 
+  Wallet 
 } from 'lucide-react';
 
 export default function App() {
-  const [isAdminRoute, setIsAdminRoute] = useState(() => {
+  // 1. HIDDEN ADMIN PORTAL & AUTHENTICATION VIA URL QUERY PARAMETER (?admin=true)
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return window.location.search.includes('admin=true');
     }
     return false;
   });
 
-  // 1. STATE MANAGEMENT FOR TABS / SECTIONS:
-  // Clean state for active views, defaulting to 'register' (the main landing page registration view)
+  // Continuously inspect window.location.search to handle navigation & query param changes
+  useEffect(() => {
+    const checkAdminParam = () => {
+      if (typeof window !== 'undefined') {
+        const hasAdminParam = window.location.search.includes('admin=true');
+        setIsAdminMode(hasAdminParam);
+      }
+    };
+
+    checkAdminParam();
+    window.addEventListener('popstate', checkAdminParam);
+    const interval = setInterval(checkAdminParam, 1000);
+
+    return () => {
+      window.removeEventListener('popstate', checkAdminParam);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Public navigation tabs state
   const [activeTab, setActiveTab] = useState<'register' | 'verify' | 'stars-guide' | 'prizes' | 'referrals'>('register');
   const [activeTicket, setActiveTicket] = useState<DiwaliTicket | null>(null);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
-  const [stats, setStats] = useState<{
+  const [, setStats] = useState<{
     totalEntries: number;
     verifiedEntries: number;
     grandPrizePool: string;
@@ -50,9 +66,9 @@ export default function App() {
   });
 
   // ========================================================
-  // 1. USER WALLET & REFER & EARN STATE (EXACT BUSINESS RULES)
+  // 2. REFERRAL & WALLET SYSTEM (EXACT BUSINESS RULES)
   // ========================================================
-  // Rule 1: Visible Wallet showing user's current earnings balance in INR (₹0 initially)
+  // Rule: Display user's current earnings balance in INR (initializes at ₹0)
   const [walletBalance, setWalletBalance] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_wallet_balance');
@@ -60,10 +76,10 @@ export default function App() {
         return parseFloat(saved) || 0;
       }
     }
-    return 0; // ₹0 initially as specified
+    return 0; // ₹0 initially
   });
 
-  // Rule 2: Unique referral link / code generation
+  // Unique referral code generation
   const [referralCode, setReferralCode] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_ref_code');
@@ -72,7 +88,7 @@ export default function App() {
     return 'DWL-REF' + Math.floor(100000 + Math.random() * 900000);
   });
 
-  // Rule 2: Referral list tracking who paid 100 Telegram Stars (⭐ XTR)
+  // Referral tracking records
   const [referrals, setReferrals] = useState<ReferralRecord[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_referrals');
@@ -80,7 +96,7 @@ export default function App() {
         try {
           return JSON.parse(saved);
         } catch (e) {
-          // Fallback to default
+          // Fallback to default records
         }
       }
     }
@@ -104,7 +120,7 @@ export default function App() {
     ];
   });
 
-  // Rule 3: Past withdrawals records
+  // Past withdrawal records
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_withdrawals');
@@ -137,15 +153,6 @@ export default function App() {
   }, [withdrawals]);
 
   useEffect(() => {
-    const handleLocationChange = () => {
-      setIsAdminRoute(window.location.search.includes('admin=true'));
-    };
-
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
-  }, []);
-
-  useEffect(() => {
     fetch('/api/stats')
       .then((res) => res.json())
       .then((data) => {
@@ -162,26 +169,22 @@ export default function App() {
 
   const handleTicketGenerated = (ticket: DiwaliTicket) => {
     setActiveTicket(ticket);
-    // Align referral code with user's official generated Ticket ID
     if (ticket.ticketId) {
       setReferralCode(ticket.ticketId);
     }
   };
 
-  // Robust smooth scroll handler ensuring register tab is active and scrolling to #registration-step-span
+  // 3. SMOOTH SCROLL & HERO CTA FIX:
+  // Executes document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   const handleScrollToForm = (e?: React.MouseEvent) => {
     if (e && e.preventDefault) {
       e.preventDefault();
     }
     setActiveTab('register');
     setTimeout(() => {
-      const targetSpan = document.getElementById('registration-step-span') 
-        || document.querySelector('#registration-form-box div div span')
-        || document.getElementById('registration-form-box')
-        || document.getElementById('register-form') 
-        || document.querySelector('form');
-      if (targetSpan) {
-        targetSpan.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const registerElement = document.getElementById('register-form');
+      if (registerElement) {
+        registerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         window.scrollTo({ top: 800, behavior: 'smooth' });
       }
@@ -202,10 +205,9 @@ export default function App() {
   };
 
   // ========================================================
-  // REFERRAL BUSINESS LOGIC IMPLEMENTATION
+  // REWARD LOGIC: Credit ₹100 INR to referrer ONLY AFTER
+  // the referred user pays 100 Telegram Stars (⭐ XTR)
   // ========================================================
-  // Rule 2: Referral reward of ₹100 INR is added to referrer's wallet
-  // ONLY AFTER the referred person successfully pays 100 Telegram Stars (⭐ XTR)
   const handleSimulateStarPayment = (referralId: string) => {
     setReferrals((prev) =>
       prev.map((item) => {
@@ -237,14 +239,14 @@ export default function App() {
       id: 'ref-' + Date.now(),
       name,
       ticketId: 'DWL-' + Math.floor(100000 + Math.random() * 900000),
-      paidStars: false, // Starts as pending stars payment
+      paidStars: false,
       rewardEarned: 0,
       date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
     };
     setReferrals((prev) => [newRef, ...prev]);
   };
 
-  // Quick simulator for testing the ₹1,000 withdrawal milestone
+  // Simulator to demonstrate the ₹1,000 withdrawal milestone
   const handleQuickSimulateGoal = () => {
     const newItems: ReferralRecord[] = Array.from({ length: 10 }, (_, i) => ({
       id: 'ref-goal-' + Date.now() + '-' + i,
@@ -267,7 +269,9 @@ export default function App() {
     }
   };
 
-  // Rule 3: Enforce strict minimum withdrawal threshold of ₹1000 INR
+  // ========================================================
+  // WITHDRAWAL RULE: Enforce strict minimum threshold of ₹1000 INR
+  // ========================================================
   const handleWithdraw = (amount: number, upiId: string): { success: boolean; error?: string } => {
     if (walletBalance < 1000) {
       return {
@@ -302,12 +306,13 @@ export default function App() {
     return { success: true };
   };
 
-  // If ?admin=true is present in the URL: render protected Admin Portal directly
-  if (isAdminRoute) {
+  // 1. HIDDEN ADMIN PORTAL:
+  // Rendered only when ?admin=true is present in the URL
+  if (isAdminMode) {
     return (
       <AdminPortal
         onBackToPublic={() => {
-          setIsAdminRoute(false);
+          setIsAdminMode(false);
           if (typeof window !== 'undefined') {
             const url = new URL(window.location.href);
             url.searchParams.delete('admin');
@@ -321,7 +326,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0b0414] text-amber-50 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] selection:bg-amber-400 selection:text-slate-950">
-      {/* HEADER NAVIGATION BAR */}
+      {/* HEADER NAVIGATION BAR (Completely free of any Admin link) */}
       <Navbar
         activeTab={activeTab}
         walletBalance={walletBalance}
@@ -329,9 +334,7 @@ export default function App() {
           setActiveTab(tab);
           if (tab === 'register') {
             setTimeout(() => {
-              const formEl = document.getElementById('registration-step-span') 
-                || document.getElementById('register-form') 
-                || document.querySelector('form');
+              const formEl = document.getElementById('register-form') || document.querySelector('form');
               if (formEl) {
                 formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }
@@ -350,7 +353,7 @@ export default function App() {
         onOpenAiChat={() => setIsAiChatOpen(true)}
       />
 
-      {/* Hero Section directly in parent component */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-amber-950/40">
         {/* Decorative festive ambient glows */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-amber-600/15 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
@@ -383,7 +386,7 @@ export default function App() {
             <span className="text-white font-bold">{CAMPAIGN_INFO.totalPrizePool}</span>!
           </p>
 
-          {/* Main CTA Buttons with Robust Scroll Handler */}
+          {/* 3. HERO CTA BUTTON WITH DIRECT getElementById('register-form')?.scrollIntoView */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <button
               type="button"
@@ -391,16 +394,7 @@ export default function App() {
                 e.preventDefault();
                 setActiveTab('register');
                 setTimeout(() => {
-                  const targetSpan = document.getElementById('registration-step-span') 
-                    || document.querySelector('#registration-form-box div div span')
-                    || document.getElementById('registration-form-box')
-                    || document.getElementById('register-form') 
-                    || document.querySelector('form');
-                  if (targetSpan) {
-                    targetSpan.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  } else {
-                    window.scrollTo({ top: 800, behavior: 'smooth' });
-                  }
+                  document.getElementById('register-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 50);
               }}
               className="group px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:shadow-[0_0_35px_rgba(251,191,36,0.6)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
@@ -419,7 +413,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Key Highlights / Meta Ads Compliant Benefits Bar */}
+          {/* Key Highlights Bar */}
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
             <div className="p-4 rounded-xl bg-[#140824]/80 border border-amber-900/40 text-left">
               <div className="flex items-center gap-2 text-xs text-amber-400 font-semibold mb-1">
@@ -462,10 +456,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* ========================================================
-          PROMINENT USER WALLET STATUS BANNER (ALWAYS VISIBLE)
-         ======================================================== */}
-      <section className="max-w-4xl mx-auto px-4 pt-6">
+      {/* 2. VISIBLE "WALLET & REFERRAL DASHBOARD" STATUS CARD */}
+      <section className="max-w-4xl mx-auto px-4 pt-6 w-full">
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#101e2b] to-emerald-950/70 border border-emerald-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
@@ -509,15 +501,16 @@ export default function App() {
         onEnterNow={handleScrollToForm}
       />
 
-      {/* Main Content Area: DIRECTLY RENDERED ON MAIN PAGE DOM */}
+      {/* Main Content Area */}
       <main className="flex-1 space-y-10">
-        {/* Secondary tab views if user clicked tab navigation */}
+        {/* Verification Tab */}
         {activeTab === 'verify' && (
           <div className="animate-in fade-in duration-300">
             <TicketVerifier />
           </div>
         )}
 
+        {/* Telegram Stars Guide Tab */}
         {activeTab === 'stars-guide' && (
           <div className="animate-in fade-in duration-300">
             <TelegramStarsGuide
@@ -526,6 +519,7 @@ export default function App() {
           </div>
         )}
 
+        {/* Prize Pool Tab */}
         {activeTab === 'prizes' && (
           <div className="animate-in fade-in duration-300">
             <PrizePoolSection
@@ -534,9 +528,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ========================================================
-            WALLET & REFER & EARN DASHBOARD (WHEN TAB IS 'REFERRALS')
-           ======================================================== */}
+        {/* 2. FULL WALLET & REFER & EARN DASHBOARD */}
         {activeTab === 'referrals' && (
           <div className="animate-in fade-in duration-300">
             <ReferAndEarn
@@ -554,14 +546,14 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. EXPLICIT FORM ID: Container section where the Registration Form is rendered with id="register-form" */}
+        {/* 3. EXPLICIT FORM CONTAINER WITH id="register-form" */}
         <section
           id="register-form"
           data-testid="registration-form"
           className="scroll-mt-20 w-full"
         >
           <div id="registration-form-section" className="w-full">
-            <div id="registration-form" className="w-full">
+            <div id="registration-form-box" className="w-full">
               <RegistrationForm
                 onTicketGenerated={handleTicketGenerated}
                 onNavigateToReferrals={() => {
