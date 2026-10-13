@@ -125,8 +125,23 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
           </div>
         </div>
 
+        {/* Meta Ad Policy Disclaimer & Transparency Notice */}
+        <div className="border-t border-amber-950/60 pt-6 pb-2 text-[11px] text-amber-400/60 leading-relaxed text-center sm:text-left space-y-1.5">
+          <p className="font-semibold text-amber-300/80">
+            Official Campaign & Policy Safeguards:
+          </p>
+          <p>
+            • Minimum withdrawal threshold remains strictly ₹1,000 INR via official UPI bank disbursement.
+            • Direct referral bonus (₹100 INR) is unlocked only after valid 100 Telegram Stars (⭐ XTR) pass payment.
+            • Festive winner commission (10%) is calculated on the official reward value following draw verification.
+          </p>
+          <p className="text-amber-300/70 italic pt-1">
+            Disclaimer: This campaign is in no way sponsored, endorsed, or administered by Meta.
+          </p>
+        </div>
+
         {/* Bottom Bar - Completely removed any admin link */}
-        <div className="border-t border-amber-950/80 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-400/60">
+        <div className="border-t border-amber-950/80 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-400/60">
           <p>© 2026 Drive Your Luck This Diwali. All rights reserved.</p>
           <div className="flex items-center gap-4 text-amber-300/80">
             <span>Shubh Deepavali 🪔 Apno Ke Saath Khushiyan Manao!</span>

@@ -133,13 +133,18 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
             fullName: 'Aarav Sharma',
             mobile: '+91 98765 43210',
             email: 'aarav.sharma@example.com',
-            walletBalance: 200,
+            walletBalance: 7700,
             referrals: [
               {
                 id: 'ref-demo-1',
                 name: 'Kavita Verma',
                 ticketId: 'DWL-912834',
                 paidStars: true,
+                passStatus: 'Verified',
+                drawStatus: 'Winner',
+                wonPrizeName: 'Festive Mega Reward (₹75,000)',
+                wonPrizeValue: 75000,
+                winnerCommissionEarned: 7500,
                 rewardEarned: 100,
                 date: '10 Oct 2026',
               },
@@ -148,6 +153,8 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
                 name: 'Rohan Mehra',
                 ticketId: 'DWL-492015',
                 paidStars: true,
+                passStatus: 'Verified',
+                drawStatus: 'Entered',
                 rewardEarned: 100,
                 date: '11 Oct 2026',
               },
@@ -156,6 +163,8 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
                 name: 'Neha Gupta',
                 ticketId: 'DWL-783920',
                 paidStars: false,
+                passStatus: 'Pending',
+                drawStatus: 'Entered',
                 rewardEarned: 0,
                 date: '12 Oct 2026',
               },
@@ -293,10 +302,10 @@ export const TrackStatusModal: React.FC<TrackStatusModalProps> = ({
             Existing User Session
           </span>
           <h3 className="text-2xl font-black text-white font-['Rozha_One'] mt-2">
-            Track Referral Status & Wallet Login
+            Track My Referral & Earnings
           </h3>
           <p className="text-xs text-amber-200/80 mt-1 max-w-sm mx-auto">
-            Apna registered Mobile Number ya Ticket ID enter karke apna live wallet balance aur referral stage track karein.
+            Apna registered Mobile Number ya Ticket ID (DWL-XXXXXX) enter karke live wallet balance, Pass Status aur 10% Lucky Winner Commission track karein.
           </p>
         </div>
 

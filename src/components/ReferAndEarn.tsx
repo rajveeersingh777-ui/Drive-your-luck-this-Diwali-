@@ -21,7 +21,13 @@ import {
   IndianRupee,
   RefreshCw,
   PlusCircle,
-  ExternalLink
+  ExternalLink,
+  Trophy,
+  Award,
+  Zap,
+  HelpCircle,
+  Car,
+  Bike
 } from 'lucide-react';
 import { DiwaliTicket } from '../types';
 
@@ -32,6 +38,11 @@ export interface ReferralRecord {
   paidStars: boolean;
   rewardEarned: number; // ₹100 if paidStars is true, ₹0 if false
   date: string;
+  passStatus?: 'Pending' | 'Verified';
+  drawStatus?: 'Entered' | 'Winner';
+  wonPrizeName?: string;
+  wonPrizeValue?: number;
+  winnerCommissionEarned?: number; // 10% cash bonus
 }
 
 export interface WithdrawalRecord {
@@ -51,6 +62,7 @@ interface ReferAndEarnProps {
   withdrawals: WithdrawalRecord[];
   onWithdraw: (amount: number, upiId: string) => { success: boolean; error?: string };
   onSimulateStarPayment: (referralId: string) => void;
+  onSimulateWinner?: (referralId: string, prizeName: string, prizeValue: number) => void;
   onAddReferral: (name: string) => void;
   onQuickSimulateGoal: () => void;
 }
@@ -64,6 +76,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
   withdrawals,
   onWithdraw,
   onSimulateStarPayment,
+  onSimulateWinner,
   onAddReferral,
   onQuickSimulateGoal,
 }) => {
@@ -78,8 +91,10 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
   const referralLink = `https://drive-your-luck-this-diwali.vercel.app?ref=${referralCode}`;
   const shareText = `🪔 Shubh Deepavali! Secure your exclusive Diwali Festive Pass for 100 Telegram Stars (⭐ XTR) and unlock access to the ₹5 Crore Mega Pool! Use my referral code ${referralCode} or claim here: ${referralLink}`;
 
-  const verifiedReferralsCount = referrals.filter((r) => r.paidStars).length;
-  const pendingReferralsCount = referrals.filter((r) => !r.paidStars).length;
+  const verifiedReferralsCount = referrals.filter((r) => r.paidStars || r.passStatus === 'Verified').length;
+  const pendingReferralsCount = referrals.filter((r) => !r.paidStars && r.passStatus !== 'Verified').length;
+  const totalCommissionWon = referrals.reduce((sum, r) => sum + (r.winnerCommissionEarned || 0), 0);
+  const winnersCount = referrals.filter((r) => r.drawStatus === 'Winner').length;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -110,7 +125,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
 
     const amountNum = parseFloat(withdrawAmount) || walletBalance;
 
-    // RULE 3: Strict minimum withdrawal threshold of ₹1000 INR
+    // RULE: Strict minimum withdrawal threshold of ₹1000 INR
     if (walletBalance < 1000) {
       setValidationError('Minimum withdrawal amount is ₹1000. Your current wallet balance is ₹' + walletBalance + '. Please refer more friends to reach the ₹1000 threshold.');
       return;
@@ -161,7 +176,50 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-300">
       {/* ========================================================
-          1. USER WALLET DISPLAY SECTION & WITHDRAWAL FORM
+          1. HIGH-VISIBILITY 10% GRAND PRIZE REFERRAL REWARD RULE BANNER
+         ======================================================== */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-1 shadow-[0_10px_40px_rgba(245,158,11,0.35)] animate-pulse-subtle">
+        <div className="relative rounded-[22px] bg-gradient-to-r from-[#20070b] via-[#2f0e05] to-[#1d0611] p-5 sm:p-6 text-white border border-amber-400/40">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 p-0.5 flex-shrink-0 shadow-lg shadow-amber-500/40">
+                <div className="w-full h-full bg-[#1e070d] rounded-[14px] flex items-center justify-center text-amber-300">
+                  <Trophy className="w-6 h-6 animate-bounce" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-[10px] font-black tracking-widest text-amber-300 uppercase">
+                  <Sparkles className="w-3 h-3 text-yellow-300" />
+                  <span>Exclusive 10% Winner Commission Rule</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-200 to-orange-200 font-['Rozha_One'] leading-tight">
+                  Referral Bonus: 10% Cash Bonus on Festive Mega Rewards!
+                </h3>
+                <p className="text-xs sm:text-sm text-amber-100/90 leading-relaxed max-w-2xl font-medium">
+                  "Referral Bonus: If any user registered through your referral link wins a Mega Reward in the Diwali Festive Draw, <strong className="text-yellow-300 font-extrabold underline decoration-yellow-400 underline-offset-2">YOU get an EXTRA 10% cash bonus</strong> of their official reward value credited directly to your wallet/bank!"
+                </p>
+              </div>
+            </div>
+
+            <div className="flex-shrink-0 self-center md:self-auto">
+              <div className="px-4 py-2.5 rounded-2xl bg-amber-950/80 border border-amber-400/50 text-center shadow-inner">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300 block">
+                  Winner Commission
+                </span>
+                <span className="text-2xl font-black text-yellow-300 font-mono">
+                  10% FLAT
+                </span>
+                <span className="text-[10px] text-amber-200/70 block">
+                  On Every Draw Win
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================
+          2. USER WALLET DISPLAY SECTION & WITHDRAWAL FORM
          ======================================================== */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1b052e] via-[#2a083d] to-[#0c0316] border-2 border-emerald-500/60 p-6 sm:p-8 shadow-[0_12px_45px_rgba(16,185,129,0.25)]">
         {/* Ambient decorative glowing backdrops */}
@@ -184,7 +242,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
                 </span>
               </div>
               <p className="text-xs text-emerald-200/70 mt-0.5">
-                Earn ₹100 INR for every friend who joins & pays 100 Telegram Stars (⭐ XTR).
+                Earn ₹100 per verified friend + 10% Cash Bonus if any referred friend wins a Grand Prize!
               </p>
             </div>
           </div>
@@ -199,14 +257,19 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Main INR Balance Card */}
           <div className="md:col-span-2 p-5 sm:p-6 rounded-2xl bg-black/60 border border-emerald-500/40 flex flex-col justify-between shadow-inner relative overflow-hidden">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                 <IndianRupee className="w-3.5 h-3.5 text-emerald-400" />
                 Current Earnings Balance (INR)
               </span>
-              <span className="text-[11px] font-mono text-amber-300 bg-black/60 px-2 py-0.5 rounded border border-amber-500/30">
-                1 Referral = ₹100 INR
-              </span>
+              <div className="flex items-center gap-2 text-[10px]">
+                <span className="font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+                  Direct: ₹100 / pass
+                </span>
+                <span className="font-mono text-yellow-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30 font-bold">
+                  Winner: +10% Prize
+                </span>
+              </div>
             </div>
 
             <div className="my-3 flex items-baseline gap-2">
@@ -253,15 +316,17 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
             </div>
 
             <div className="p-3.5 rounded-xl bg-black/40 border border-amber-900/50 flex flex-col justify-center">
-              <span className="text-[11px] text-amber-300/80 font-medium flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
-                Pending Stars Payment
+              <span className="text-[11px] text-yellow-300 font-medium flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5 text-yellow-400" />
+                10% Winner Bonuses
               </span>
-              <p className="text-xl sm:text-2xl font-bold text-amber-200 font-mono mt-0.5">
-                {pendingReferralsCount}
-                <span className="text-xs font-normal text-amber-400/80 ml-1.5">
-                  (₹0 credited yet)
-                </span>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-300 font-mono mt-0.5">
+                {winnersCount} {winnersCount === 1 ? 'Winner' : 'Winners'}
+                {totalCommissionWon > 0 && (
+                  <span className="text-xs font-bold text-emerald-400 ml-1.5">
+                    (+₹{totalCommissionWon.toLocaleString('en-IN')})
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -281,7 +346,7 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
             </span>
           </div>
 
-          {/* Validation Alert for Rule 3 */}
+          {/* Validation Alert for Rule */}
           {validationError && (
             <div className="mb-4 p-3.5 rounded-xl bg-red-950/70 border border-red-500/50 text-red-200 text-xs sm:text-sm flex items-start gap-2.5 animate-in fade-in duration-200">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
@@ -409,33 +474,77 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
       </section>
 
       {/* ========================================================
-          2. REFER & EARN LOGIC & LINK GENERATOR
+          4. TWO EARNING STREAMS EXPLAINED SECTION
+         ======================================================== */}
+      <section className="rounded-3xl bg-gradient-to-br from-[#180829] via-[#240c3c] to-[#120520] border border-amber-500/40 p-6 sm:p-8 space-y-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/70 border border-amber-500/40 text-xs font-bold text-amber-300">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Dual Revenue Streams for Every Referrer</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white font-['Rozha_One']">
+            How You Earn: 2 Powerful Referral Streams
+          </h2>
+          <p className="text-xs sm:text-sm text-amber-200/80">
+            Har ek referral se do taraf se kamaai: Entry pass kharidte hi instant cash, aur lucky draw jeetne par grand 10% commission!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Stream 1 Card */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-black/50 border border-emerald-500/40 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider bg-emerald-950 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                1. Direct Referral Bonus
+              </span>
+              <span className="text-xl font-mono font-black text-emerald-300">₹100 INR</span>
+            </div>
+            <h4 className="text-lg font-bold text-white flex items-center gap-2">
+              <Zap className="w-5 h-5 text-emerald-400" />
+              <span>Direct Referral Bonus: ₹100 INR</span>
+            </h4>
+            <p className="text-xs text-emerald-200/80 leading-relaxed">
+              Credited upon friend's successful <strong>100 Telegram Stars (⭐ XTR)</strong> pass purchase and verification.
+            </p>
+            <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-[11px] text-emerald-300 font-mono">
+              Formula: 10 Verified Friends × ₹100 = ₹1,000 (Instant Minimum Withdrawal Milestone)
+            </div>
+          </div>
+
+          {/* Stream 2 Card */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-black/50 border border-amber-500/40 space-y-3 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-wider bg-amber-950 px-2.5 py-1 rounded-md border border-amber-500/30">
+                2. Festive Winner Commission
+              </span>
+              <span className="text-xl font-mono font-black text-yellow-300">10% BONUS</span>
+            </div>
+            <h4 className="text-lg font-bold text-white flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+              <span>Festive Winner Commission: 10% Cash Bonus</span>
+            </h4>
+            <p className="text-xs text-amber-200/80 leading-relaxed">
+              10% cash bonus of the winning reward value if your referred friend wins a festive draw reward in the official Diwali draw.
+            </p>
+            <div className="p-2.5 rounded-lg bg-amber-950/40 border border-amber-500/20 text-[11px] text-yellow-200 font-mono">
+              Reward Commission: 10% cash bonus credited directly to your earnings wallet/bank upon draw verification!
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================
+          5. REFER & EARN LINK GENERATOR & SOCIAL SHARE
          ======================================================== */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1c0022] via-[#330030] to-[#1a001a] border-2 border-emerald-500/50 p-6 sm:p-8 text-center shadow-[0_10px_35px_rgba(16,185,129,0.2)]">
         <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 uppercase tracking-wider bg-black/40 px-3.5 py-1 rounded-full border border-emerald-500/40 mb-3 shadow-sm">
           <Gift className="w-4 h-4 text-emerald-400" />
-          <span>Diwali Viral Rewards · Refer & Earn ₹100 INR</span>
+          <span>Diwali Viral Rewards · Double Earning Engine</span>
         </div>
 
         <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-['Rozha_One'] tracking-tight">
-          🪔 Share Festive Joy & Earn ₹100 INR per Friend
+          🪔 Share Festive Joy & Generate Your Rewards
         </h2>
-
-        {/* Highlighted Core Business Rule Banner */}
-        <div className="mt-3 max-w-2xl mx-auto p-3.5 rounded-xl bg-amber-950/60 border border-amber-500/40 text-xs sm:text-sm text-amber-200 leading-relaxed text-left flex items-start gap-2.5">
-          <Sparkles className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <strong className="text-white block font-bold">
-              Exact Business Rule:
-            </strong>
-            You will receive <strong className="text-amber-300 font-bold">₹100 INR</strong> in your wallet{' '}
-            <span className="underline decoration-amber-400 underline-offset-2 font-semibold">
-              only after
-            </span>{' '}
-            your referred friend successfully completes their Festive Pass entry by paying{' '}
-            <strong className="text-white font-bold">100 Telegram Stars (⭐ XTR)</strong>.
-          </div>
-        </div>
 
         {/* Dynamic Referral Link & Code Box */}
         <div className="mt-6 max-w-2xl mx-auto bg-black/60 border border-emerald-500/40 rounded-2xl p-4 sm:p-5 text-left space-y-4">
@@ -496,20 +605,20 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
       </section>
 
       {/* ========================================================
-          LIVE REFERRAL TRACKING TABLE & INTERACTIVE DEMO SIMULATOR
+          6. DETAILED STAGE INDICATORS & REFERRALS TABLE
          ======================================================== */}
       <section className="bg-[#120722]/90 border border-amber-900/40 rounded-2xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-amber-900/40 pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-1">
               <Users className="w-4 h-4 text-amber-400" />
-              <span>Live Referral Status Tracking</span>
+              <span>Detailed Stage Tracking & Verification</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-bold text-white font-['Rozha_One']">
-              Your Referred Friends
+              Your Referred Friends & Stages
             </h3>
             <p className="text-xs text-amber-200/70 mt-0.5">
-              Track who registered and who completed the 100 Telegram Stars (⭐ XTR) payment.
+              Live tracking for both <strong>Pass Status</strong> (100 Stars) and <strong>Draw Status</strong> (Entered / Winner 10% Bonus).
             </p>
           </div>
 
@@ -553,89 +662,194 @@ export const ReferAndEarn: React.FC<ReferAndEarnProps> = ({
               <tr>
                 <th className="py-3 px-4">Friend Name</th>
                 <th className="py-3 px-4">Ticket ID</th>
-                <th className="py-3 px-4">100 ⭐ XTR Payment</th>
-                <th className="py-3 px-4">Wallet Reward</th>
-                <th className="py-3 px-4 text-right">Action / Verification</th>
+                <th className="py-3 px-4">Pass Status (100 ⭐ XTR)</th>
+                <th className="py-3 px-4">Draw Status (10% Bonus)</th>
+                <th className="py-3 px-4">Total Earned</th>
+                <th className="py-3 px-4 text-right">Actions / Demo Sim</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-amber-900/30 bg-[#0d0417]/60">
               {referrals.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 px-4 text-center text-slate-400">
+                  <td colSpan={6} className="py-6 px-4 text-center text-slate-400">
                     No referrals yet. Share your link above or click "Invite Test Friend" to test!
                   </td>
                 </tr>
               ) : (
-                referrals.map((ref) => (
-                  <tr key={ref.id} className="hover:bg-amber-950/20 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-white">
-                      {ref.name}
-                      <span className="block text-[10px] text-slate-400 font-normal">{ref.date}</span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-amber-300">
-                      {ref.ticketId}
-                    </td>
-                    <td className="py-3 px-4">
-                      {ref.paidStars ? (
-                        <div className="space-y-0.5">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                            Verified (₹100 Earned)
-                          </span>
-                          <span className="block text-[10px] text-emerald-400/80 font-medium">
-                            100 Stars payment completed & verified by admin
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="space-y-0.5">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
-                            <Clock className="w-3 h-3 text-amber-400" />
-                            Pending (Awaiting Stars)
-                          </span>
-                          <span className="block text-[10px] text-amber-200/70">
-                            Joined via link, but hasn't completed 100 Stars (⭐ XTR) payment yet
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {ref.paidStars ? (
+                referrals.map((ref) => {
+                  const isVerifiedPass = ref.paidStars || ref.passStatus === 'Verified';
+                  const isWinner = ref.drawStatus === 'Winner';
+                  const totalLineEarned = (ref.rewardEarned || 0) + (ref.winnerCommissionEarned || 0);
+
+                  return (
+                    <tr key={ref.id} className="hover:bg-amber-950/20 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-white">
+                        {ref.name}
+                        <span className="block text-[10px] text-slate-400 font-normal">{ref.date}</span>
+                      </td>
+
+                      <td className="py-3 px-4 font-mono text-amber-300">
+                        {ref.ticketId}
+                      </td>
+
+                      {/* Pass Status Column */}
+                      <td className="py-3 px-4">
+                        {isVerifiedPass ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              Verified (₹100 Earned)
+                            </span>
+                            <span className="block text-[10px] text-emerald-400/80 font-medium">
+                              100 Stars payment completed & verified
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-500/40">
+                              <Clock className="w-3 h-3 text-amber-400" />
+                              Pending (Awaiting Stars)
+                            </span>
+                            <span className="block text-[10px] text-amber-200/70">
+                              Joined via link, 100 ⭐ payment pending
+                            </span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Draw Status Column */}
+                      <td className="py-3 px-4">
+                        {isWinner ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow-sm">
+                              <Trophy className="w-3 h-3 text-slate-950" />
+                              Winner (10% Bonus Earned)
+                            </span>
+                            <span className="block text-[10px] text-yellow-300 font-bold">
+                              Won {ref.wonPrizeName || 'Festive Grand Prize'} (+₹{(ref.winnerCommissionEarned || 0).toLocaleString('en-IN')})
+                            </span>
+                          </div>
+                        ) : isVerifiedPass ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-950/80 text-sky-300 border border-sky-500/40">
+                              <Check className="w-3 h-3 text-sky-400" />
+                              Entered in Draw Pool
+                            </span>
+                            <span className="block text-[10px] text-sky-200/70">
+                              Eligible for 10% commission on win
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-700">
+                              Not Entered Yet
+                            </span>
+                            <span className="block text-[10px] text-slate-500">
+                              Pending pass verification
+                            </span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Total Earned Column */}
+                      <td className="py-3 px-4">
                         <div>
-                          <span className="font-extrabold text-emerald-400 font-mono text-sm block">
-                            +₹100 INR
+                          <span className={`font-mono text-sm font-extrabold block ${totalLineEarned > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
+                            ₹{totalLineEarned.toLocaleString('en-IN')} INR
                           </span>
-                          <span className="text-[10px] text-emerald-300/80">Added to balance</span>
+                          {ref.winnerCommissionEarned ? (
+                            <span className="text-[10px] text-yellow-300">
+                              ₹100 + ₹{ref.winnerCommissionEarned.toLocaleString('en-IN')} (10%)
+                            </span>
+                          ) : isVerifiedPass ? (
+                            <span className="text-[10px] text-emerald-300/80">Direct pass reward</span>
+                          ) : (
+                            <span className="text-[10px] text-amber-300/60">Locked (Pending)</span>
+                          )}
                         </div>
-                      ) : (
-                        <div>
-                          <span className="text-slate-400 font-mono text-xs block">
-                            ₹0 (Locked)
-                          </span>
-                          <span className="text-[10px] text-amber-300/60">Requires 100 ⭐ XTR</span>
+                      </td>
+
+                      {/* Action / Simulation Column */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex flex-col items-end gap-1.5">
+                          {!isVerifiedPass && (
+                            <button
+                              type="button"
+                              onClick={() => onSimulateStarPayment(ref.id)}
+                              className="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
+                            >
+                              Simulate 100 ⭐ Paid (+₹100)
+                            </button>
+                          )}
+
+                          {isVerifiedPass && !isWinner && onSimulateWinner && (
+                            <button
+                              type="button"
+                              onClick={() => onSimulateWinner(ref.id, 'Festive Mega Reward', 100000)}
+                              className="px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-extrabold text-[11px] rounded-lg shadow-md transition-transform active:scale-95 cursor-pointer"
+                              title="Simulate friend winning Festive Mega Reward -> You get 10% cash bonus!"
+                            >
+                              🎉 Simulate Winner (+10% Bonus)
+                            </button>
+                          )}
+
+                          {isWinner && (
+                            <span className="text-[11px] text-emerald-400 font-bold">
+                              ✓ 10% Commission Credited
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {!ref.paidStars ? (
-                        <button
-                          type="button"
-                          onClick={() => onSimulateStarPayment(ref.id)}
-                          className="px-3 py-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-[11px] rounded-lg shadow-sm transition-transform active:scale-95 cursor-pointer"
-                        >
-                          Simulate 100 ⭐ Paid (+₹100)
-                        </button>
-                      ) : (
-                        <span className="text-[11px] text-emerald-400 font-medium">
-                          ✓ Credited to Wallet
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* ========================================================
+          7. UPDATED RULES & POLICY DISPLAY (META AD COMPLIANT)
+         ======================================================== */}
+      <section className="rounded-2xl bg-black/60 border border-amber-900/50 p-6 sm:p-7 space-y-4">
+        <div className="flex items-center gap-2 text-amber-300 text-sm font-bold border-b border-amber-900/40 pb-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-400" />
+          <span>Official Referral Policy & Guidelines (Meta Ad Compliant)</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-amber-200/80 leading-relaxed">
+          <div className="p-3.5 rounded-xl bg-[#140624] border border-amber-900/40 space-y-1">
+            <strong className="text-white block font-bold text-xs">
+              1. Minimum Withdrawal Threshold
+            </strong>
+            <p>
+              Withdrawals remain strictly subject to a minimum wallet balance of <span className="text-amber-300 font-bold">₹1000 INR</span>. Balances below ₹1000 cannot be disbursed and roll over until the threshold is met.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#140624] border border-amber-900/40 space-y-1">
+            <strong className="text-white block font-bold text-xs">
+              2. Direct ₹100 Referral Reward
+            </strong>
+            <p>
+              Direct <span className="text-emerald-300 font-bold">₹100 INR</span> reward is unlocked and credited <span className="underline decoration-emerald-400 font-semibold">only after</span> valid 100 Telegram Stars (⭐ XTR) festive pass payment is verified by official bot/admin.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#140624] border border-amber-900/40 space-y-1">
+            <strong className="text-white block font-bold text-xs">
+              3. Festive Winner Commission (10%)
+            </strong>
+            <p>
+              The <span className="text-yellow-300 font-bold">10% Festive Winner Commission</span> is calculated on the official reward value of any festive draw reward won by your referred user, following verification by Campaign Administrators.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-400 pt-2 border-t border-amber-900/30">
+          *Note: Anti-fraud & spam monitoring active. Self-referrals and fictitious mobile entries will be disqualified. Payments processed via official UPI within 24 working hours.
+        </p>
       </section>
     </div>
   );

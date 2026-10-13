@@ -93,7 +93,7 @@ export default function App() {
     return 'DWL-REF' + Math.floor(100000 + Math.random() * 900000);
   });
 
-  // Referral tracking records
+  // Referral tracking records with Pass Status and Draw Status stage indicators
   const [referrals, setReferrals] = useState<ReferralRecord[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dwl_user_referrals');
@@ -110,15 +110,32 @@ export default function App() {
         id: 'ref-1',
         name: 'Aarav Sharma',
         ticketId: 'DWL-847291',
-        paidStars: false,
-        rewardEarned: 0,
-        date: '12 Oct 2026',
+        paidStars: true,
+        passStatus: 'Verified',
+        drawStatus: 'Winner',
+        wonPrizeName: 'Festive Mega Reward (₹75,000)',
+        wonPrizeValue: 75000,
+        winnerCommissionEarned: 7500,
+        rewardEarned: 100,
+        date: '10 Oct 2026',
       },
       {
         id: 'ref-2',
         name: 'Priya Patel',
         ticketId: 'DWL-639104',
+        paidStars: true,
+        passStatus: 'Verified',
+        drawStatus: 'Entered',
+        rewardEarned: 100,
+        date: '11 Oct 2026',
+      },
+      {
+        id: 'ref-3',
+        name: 'Rohan Mehra',
+        ticketId: 'DWL-492015',
         paidStars: false,
+        passStatus: 'Pending',
+        drawStatus: 'Entered',
         rewardEarned: 0,
         date: '12 Oct 2026',
       },
@@ -303,6 +320,39 @@ export default function App() {
     } catch (e) {
       // Fallback
     }
+  };
+
+  // ========================================================
+  // 10% GRAND PRIZE REFERRAL REWARD RULE:
+  // If referred friend wins Grand Prize, credit 10% cash bonus to wallet
+  // ========================================================
+  const handleSimulateWinner = (referralId: string, prizeName: string, prizeValue: number) => {
+    const commissionBonus = Math.round(prizeValue * 0.1);
+    setReferrals((prev) =>
+      prev.map((item) => {
+        if (item.id === referralId) {
+          return {
+            ...item,
+            paidStars: true,
+            passStatus: 'Verified',
+            drawStatus: 'Winner',
+            wonPrizeName: prizeName,
+            wonPrizeValue: prizeValue,
+            winnerCommissionEarned: commissionBonus,
+          };
+        }
+        return item;
+      })
+    );
+    // Credit 10% bonus to wallet balance
+    setWalletBalance((curr) => curr + commissionBonus);
+    try {
+      confetti({
+        particleCount: 120,
+        spread: 100,
+        origin: { y: 0.5 },
+      });
+    } catch (e) {}
   };
 
   const handleAddReferral = (name: string) => {
@@ -498,7 +548,7 @@ export default function App() {
               className="px-5 py-3.5 rounded-xl font-bold text-sm sm:text-base text-amber-200 bg-gradient-to-r from-amber-950/80 to-[#1e0f06] hover:from-amber-900/80 hover:to-[#2b160a] border border-amber-500/50 flex items-center gap-2 transition-all hover:text-white cursor-pointer shadow-lg shadow-amber-950/50 hover:scale-[1.02] active:scale-95"
             >
               <UserCheck className="w-4 h-4 text-amber-400" />
-              <span>Track Referral Status / Login</span>
+              <span>Track My Referral & Earnings</span>
             </button>
           </div>
 
@@ -545,8 +595,46 @@ export default function App() {
         </div>
       </section>
 
-      {/* 2. VISIBLE "WALLET & REFERRAL DASHBOARD" STATUS CARD */}
+      {/* ========================================================
+          HIGH-VISIBILITY 10% GRAND PRIZE REFERRAL REWARD RULE BANNER
+         ======================================================== */}
       <section className="max-w-4xl mx-auto px-4 pt-6 w-full">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-0.5 shadow-xl shadow-amber-500/20">
+          <div className="rounded-[14px] bg-gradient-to-r from-[#1c060c] via-[#2a0c06] to-[#180510] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 p-0.5 flex-shrink-0 shadow-md">
+                <div className="w-full h-full bg-[#1c060c] rounded-[10px] flex items-center justify-center text-yellow-300">
+                  <Trophy className="w-5 h-5" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-black tracking-widest text-yellow-300 uppercase bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/40">
+                    Grand Referral Rule
+                  </span>
+                  <span className="text-xs font-bold text-amber-200">
+                    Dual Earning: 1. Direct Referral Bonus (₹100) + 2. Festive Winner Commission (10%)
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-amber-100 font-medium mt-1 leading-relaxed">
+                  "Referral Bonus: If any user registered through your referral link wins a Mega Reward in the Diwali Festive Draw, <strong className="text-yellow-300 font-black underline decoration-yellow-400 underline-offset-2">YOU get an EXTRA 10% cash bonus</strong> of their official reward value credited directly to your wallet/bank!"
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenWalletTab}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs flex-shrink-0 self-start sm:self-center shadow-md transition-transform hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+            >
+              View My 10% Rules →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. VISIBLE "WALLET & REFERRAL DASHBOARD" STATUS CARD */}
+      <section className="max-w-4xl mx-auto px-4 pt-4 w-full">
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#101e2b] to-emerald-950/70 border border-emerald-500/40 flex flex-wrap items-center justify-between gap-4 shadow-xl">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
@@ -566,7 +654,7 @@ export default function App() {
                   ₹{walletBalance.toLocaleString('en-IN')}
                 </span>
                 <span className="text-[11px] text-emerald-200/70">
-                  (Earn ₹100 per friend who pays 100 ⭐ XTR)
+                  (₹100 per verified 100 ⭐ pass + 10% draw winner bonus)
                 </span>
               </div>
             </div>
@@ -662,6 +750,7 @@ export default function App() {
               withdrawals={withdrawals}
               onWithdraw={handleWithdraw}
               onSimulateStarPayment={handleSimulateStarPayment}
+              onSimulateWinner={handleSimulateWinner}
               onAddReferral={handleAddReferral}
               onQuickSimulateGoal={handleQuickSimulateGoal}
             />

@@ -157,6 +157,14 @@ export const PrizePoolSection: React.FC<PrizePoolSectionProps> = ({ onRegisterCl
             <strong className="text-white block">4. Privacy & Data Protection</strong>
             <p>Personal mobile number aur correspondence address 100% confidential rahenge; public board par keval masked Ticket ID display hoga.</p>
           </div>
+          <div className="space-y-1 sm:col-span-2 p-3 rounded-xl bg-amber-950/40 border border-amber-500/30">
+            <strong className="text-yellow-300 block font-bold">5. Referral Program & 10% Winner Commission Rules (Meta Ad Compliant)</strong>
+            <ul className="list-disc list-inside space-y-1 text-amber-200/90 text-[11px] mt-1">
+              <li><strong>1. Direct Referral Bonus:</strong> ₹100 INR upon friend's successful 100 Telegram Stars (⭐ XTR) pass purchase.</li>
+              <li><strong>2. Festive Winner Commission:</strong> 10% cash bonus of the winning reward value if your referred friend wins a festive draw reward, upon Admin verification.</li>
+              <li><strong>3. Minimum Withdrawal:</strong> Strict minimum threshold of ₹1000 INR for wallet withdrawals to bank via UPI.</li>
+            </ul>
+          </div>
         </div>
 
         <div className="pt-4 border-t border-amber-900/40 text-center">
