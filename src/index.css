@@ -24,3 +24,16 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #f59e0b;
 }
+
+@keyframes float-badge {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float-badge {
+  animation: float-badge 3.5s ease-in-out infinite;
+}

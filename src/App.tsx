@@ -11,7 +11,6 @@ import { DiwaliAiAssistant } from './components/DiwaliAiAssistant';
 import { Footer } from './components/Footer';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { TrackStatusModal, UserSessionData } from './components/TrackStatusModal';
-import { DiwaliDiya } from './components/DiwaliDiya';
 import { CAMPAIGN_INFO } from './utils/constants';
 import { DiwaliTicket } from './types';
 import { 
@@ -420,12 +419,47 @@ export default function App() {
         <div className="absolute top-20 right-10 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          {/* Official Campaign Logo & Diya Centerpiece */}
+          {/* Stylish Glowing 3D Golden Badge for "₹5 Cr+" */}
           <div className="flex flex-col items-center justify-center mb-5">
-            <div className="relative p-2 rounded-2xl bg-gradient-to-b from-amber-500/20 via-orange-500/10 to-transparent border border-amber-400/30 shadow-[0_0_40px_rgba(245,158,11,0.25)] group hover:scale-105 transition-transform duration-300">
-              <DiwaliDiya size={76} glow={true} className="drop-shadow-2xl" />
+            <div className="relative group animate-float-badge cursor-default">
+              {/* Outer ambient golden backlight glow effect */}
+              <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 opacity-60 blur-xl group-hover:opacity-90 transition-opacity duration-500 pointer-events-none shadow-[0_0_35px_rgba(245,158,11,0.3)]" />
+
+              {/* Rounded glassmorphism card with shiny golden border and deep dark gradient background */}
+              <div className="relative px-7 py-3.5 sm:px-9 sm:py-4 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-950 border border-amber-400/50 shadow-[0_0_35px_rgba(245,158,11,0.3)] backdrop-blur-md flex flex-col items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105">
+                {/* Glossy top metallic reflection highlight */}
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-amber-300/15 via-yellow-200/5 to-transparent pointer-events-none rounded-t-2xl sm:rounded-t-3xl" />
+
+                {/* Festive corner sparkles */}
+                <div className="absolute top-2.5 left-3 text-amber-300/80 animate-pulse">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                </div>
+                <div className="absolute bottom-2.5 right-3 text-yellow-300/80 animate-pulse delay-500">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                </div>
+
+                {/* Subtitle / Badge Tag: MEGA PRIZE POOL in small elegant uppercase lettering */}
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <Trophy className="w-3 h-3 text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                  <span className="text-[10px] sm:text-xs font-black tracking-widest text-amber-300/90 uppercase font-mono">
+                    MEGA PRIZE POOL
+                  </span>
+                  <Trophy className="w-3 h-3 text-amber-300 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                </div>
+
+                {/* Main Text: "₹5 Cr+" in bold metallic golden gradient text with subtle text glow */}
+                <div className="relative flex items-center justify-center">
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-black font-['Cinzel',serif] tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-yellow-500 drop-shadow-[0_2px_14px_rgba(245,158,11,0.65)] filter select-none">
+                    ₹5 Cr+
+                  </span>
+                </div>
+
+                {/* Bottom subtle shine border highlight */}
+                <div className="w-16 sm:w-20 h-0.5 mt-1 rounded-full bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80" />
+              </div>
             </div>
-            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/30 text-[11px] font-semibold text-amber-300 tracking-wider uppercase">
+
+            <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/30 text-[11px] font-semibold text-amber-300 tracking-wider uppercase">
               <Sparkles className="w-3 h-3 text-amber-400" />
               <span>Official Diwali Campaign 2026</span>
             </div>
